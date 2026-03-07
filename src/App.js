@@ -1044,7 +1044,6 @@ export default function App() {
   const [newMember, setNewMember] = useState({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
   const [newMemberPhoto, setNewMemberPhoto] = useState(null);
   const [newMemberFeePaid, setNewMemberFeePaid] = useState(false);
-  const [paymentStep, setPaymentStep] = useState("idle"); // kept for legacy, unused
   const [loginRole, setLoginRole] = useState("owner");
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
@@ -1124,30 +1123,6 @@ export default function App() {
   const updateFeeStatus = async (memberId, status) => {
     await updateDoc(doc(db, "members", memberId), { status });
     showToast(status === "Paid" ? "✅ Fee marked as Paid" : "⚠️ Fee marked as Unpaid");
-    setModal(null);
-  };
-
-  // Called when member confirms they paid via UPI
-  const confirmMemberPayment = async (method = "UPI", utr = "") => {
-    const cu = members.find(m => m.id === user.id) || user;
-    const today = new Date();
-    const nextDue = new Date(today);
-    nextDue.setMonth(nextDue.getMonth() + 1);
-    const nextDueStr = nextDue.toISOString().split("T")[0];
-    const newPayment = {
-      date: today.toISOString().split("T")[0],
-      amount: Number(cu.fees),
-      status: "Paid",
-      method,
-      ...(utr ? { utr } : {}),
-    };
-    const updatedPayments = [newPayment, ...(cu.payments || [])];
-    await updateDoc(doc(db, "members", user.id), {
-      status: "Paid",
-      dueDate: nextDueStr,
-      payments: updatedPayments,
-    });
-    showToast("🎉 Payment confirmed! Thank you!");
     setModal(null);
   };
 
