@@ -16,6 +16,7 @@ const db = getFirestore(firebaseApp);
 
 // ─── Static Config (never changes) ───────────────────────────────────────────
 const OWNER = { username: "admin", password: "admin123", name: "Crossfit Admin", upiId: "crossfit@upi" };
+// ⬆️ Change "crossfit@upi" to your real UPI ID (e.g. "yourname@okaxis" or "9876543210@ybl")
 
 const MONTHLY_REVENUE = [
   { month: "Sep", revenue: 28000 }, { month: "Oct", revenue: 35000 },
@@ -911,6 +912,122 @@ function AIPlanSection({ user, members, showToast }) {
 }
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
+
+// ─── PaymentFlow Component ────────────────────────────────────────────────────
+function PaymentFlow({ cu, upiId, onPaid }) {
+  const [step, setStep] = useState("idle"); // idle | choosing | redirected | confirming | success
+  const [selMethod, setSelMethod] = useState("GPay");
+  const [utr, setUtr] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  if (cu.status === "Paid" && step !== "success") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.25)",borderRadius:20,padding:16,display:"flex",alignItems:"center",gap:14}}>
+      <div style={{fontSize:36}}>✅</div>
+      <div>
+        <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--neon)"}}>Membership Active</div>
+        <div style={{fontSize:13,color:"var(--text2)"}}>Next due: <span style={{color:"var(--text)",fontWeight:600}}>{cu.dueDate}</span></div>
+      </div>
+    </div>
+  );
+
+  if (step === "success") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1a10)",border:"1px solid rgba(0,255,136,0.4)",borderRadius:20,padding:24,textAlign:"center"}}>
+      <div style={{fontSize:52,marginBottom:10}}>🎉</div>
+      <div style={{fontFamily:"Rajdhani",fontSize:24,fontWeight:700,color:"var(--neon)",marginBottom:6}}>Payment Successful!</div>
+      <div style={{fontSize:13,color:"var(--text2)",marginBottom:14}}>Membership is now active. See you at the gym! 💪</div>
+      <button className="btn-primary" onClick={()=>setStep("idle")}>Done</button>
+    </div>
+  );
+
+  if (step === "idle") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#1a0810,#0d1020)",border:"1px solid rgba(255,68,68,0.35)",borderRadius:20,padding:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(255,68,68,0.12)",border:"1px solid rgba(255,68,68,0.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:"var(--danger)",fontWeight:700}}>🔴 PAYMENT OVERDUE</div>
+        <div style={{fontSize:28}}>💳</div>
+      </div>
+      <div style={{fontFamily:"Rajdhani",fontSize:42,fontWeight:700,color:"var(--danger)",margin:"6px 0 2px"}}>₹{cu.fees}</div>
+      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Pay to UPI · <span style={{color:"var(--neon)",fontWeight:600}}>{upiId}</span></div>
+      <button className="btn-primary" style={{background:"linear-gradient(135deg,#ff4444,#ff6b35)",boxShadow:"0 4px 20px rgba(255,68,68,0.4)"}} onClick={()=>setStep("choosing")}>
+        💳 PAY NOW ₹{cu.fees}
+      </button>
+    </div>
+  );
+
+  if (step === "choosing") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(0,212,255,0.3)",borderRadius:20,padding:20}}>
+      <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Choose Payment App</div>
+      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Tap an app — you'll be redirected to pay ₹{cu.fees}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        {[{name:"Google Pay",emoji:"🟢"},{name:"PhonePe",emoji:"🟣"},{name:"Paytm",emoji:"🔵"},{name:"BHIM UPI",emoji:"🇮🇳"}].map(app=>(
+          <button key={app.name} onClick={()=>{
+            const upiUrl = `upi://pay?pa=${upiId}&pn=Crossfit+Gym&am=${cu.fees}&tn=Gym+Membership+Fee&cu=INR`;
+            window.location.href = upiUrl;
+            setTimeout(()=>setStep("redirected"), 1500);
+          }} style={{padding:"16px 10px",borderRadius:14,background:"var(--card)",border:"1px solid var(--border)",cursor:"pointer",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <span style={{fontSize:32}}>{app.emoji}</span>
+            <span style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{app.name}</span>
+          </button>
+        ))}
+      </div>
+      <button onClick={()=>setStep("idle")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Cancel</button>
+    </div>
+  );
+
+  if (step === "redirected") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(255,215,0,0.35)",borderRadius:20,padding:24,textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:12}}>⏳</div>
+      <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,marginBottom:8}}>Complete Payment in UPI App</div>
+      <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.8,marginBottom:10}}>
+        Pay <span style={{color:"var(--danger)",fontWeight:700}}>₹{cu.fees}</span> to<br/>
+        <span style={{color:"var(--neon)",fontWeight:700,fontSize:16}}>{upiId}</span>
+      </div>
+      <div style={{background:"rgba(255,215,0,0.08)",border:"1px solid rgba(255,215,0,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:18,fontSize:12,color:"var(--warning)"}}>
+        ⚠️ After paying, come back here and tap "I've Paid"
+      </div>
+      <button className="btn-primary" style={{marginBottom:12,background:"linear-gradient(135deg,var(--neon),#00cc66)",boxShadow:"0 4px 20px rgba(0,255,136,0.4)"}} onClick={()=>setStep("confirming")}>
+        ✅ I've Paid — Confirm Now
+      </button>
+      <br/>
+      <button onClick={()=>setStep("choosing")} style={{background:"transparent",border:"none",color:"var(--text3)",fontSize:13,cursor:"pointer",textDecoration:"underline"}}>← Try a different app</button>
+    </div>
+  );
+
+  if (step === "confirming") return (
+    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.35)",borderRadius:20,padding:20}}>
+      <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Confirm Payment</div>
+      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Select app used and enter UTR (optional)</div>
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>Payment App</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {["GPay","PhonePe","Paytm","BHIM","Cash"].map(m=>(
+            <button key={m} onClick={()=>setSelMethod(m)} style={{
+              padding:"8px 14px",borderRadius:20,fontFamily:"Exo 2,sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",
+              background: selMethod===m ? "rgba(0,255,136,0.12)" : "var(--bg2)",
+              border: `1px solid ${selMethod===m ? "var(--neon)" : "var(--border)"}`,
+              color: selMethod===m ? "var(--neon)" : "var(--text2)",
+            }}>{m}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>UTR / Reference No. <span style={{color:"var(--text3)"}}>(optional)</span></div>
+        <input className="input-field" placeholder="e.g. 123456789012" value={utr} onChange={e=>setUtr(e.target.value)} style={{letterSpacing:1}}/>
+      </div>
+      <button className="btn-primary" style={{marginBottom:10}} disabled={loading} onClick={async()=>{
+        setLoading(true);
+        try { await onPaid(selMethod, utr); setStep("success"); }
+        catch(e) { alert("Error saving payment. Try again."); }
+        setLoading(false);
+      }}>
+        {loading ? "Saving..." : "🎉 CONFIRM & MARK AS PAID"}
+      </button>
+      <button onClick={()=>setStep("redirected")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Go Back</button>
+    </div>
+  );
+
+  return null;
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -923,10 +1040,11 @@ export default function App() {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [memberCoins, setMemberCoins] = useState(0);
   const [editProfile, setEditProfile] = useState(false);
+  const [gymUpiId, setGymUpiId] = useState(OWNER.upiId);
   const [newMember, setNewMember] = useState({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
   const [newMemberPhoto, setNewMemberPhoto] = useState(null);
   const [newMemberFeePaid, setNewMemberFeePaid] = useState(false);
-  const [paymentStep, setPaymentStep] = useState("idle"); // idle | choosing | redirected | confirming | success
+  const [paymentStep, setPaymentStep] = useState("idle"); // kept for legacy, unused
   const [loginRole, setLoginRole] = useState("owner");
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
@@ -958,7 +1076,16 @@ export default function App() {
       console.error("Firestore error:", err);
       setDbLoading(false);
     });
-    return () => unsub();
+
+    // Load gym settings (UPI ID) from Firebase
+    const settingsUnsub = onSnapshot(doc(db, "settings", "gym"), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.upiId) setGymUpiId(data.upiId);
+      }
+    });
+
+    return () => { unsub(); settingsUnsub(); };
   }, []);
 
   const showToast = (msg) => {
@@ -1024,33 +1151,60 @@ export default function App() {
     setModal(null);
   };
 
-  const addMember = async () => {
-    if (!newMember.name || !newMember.username || !newMember.password) { showToast("❌ Fill all fields"); return; }
-    const id = `m${Date.now()}`;
-    const today = new Date().toISOString().split("T")[0];
-    const nextDue = new Date();
-    nextDue.setMonth(nextDue.getMonth() + 1);
-    const nextDueStr = nextDue.toISOString().split("T")[0];
-    const initialPayments = newMemberFeePaid
-      ? [{ date: today, amount: Number(newMember.fees), status: "Paid", method: "Cash" }]
-      : [];
-    const m = {
-      id, ...newMember, fees: Number(newMember.fees),
-      photo: newMemberPhoto || null,
-      age: 25, height: 170, weight: 70, gender: "Male",
-      goal: "Maintenance", activity: "Moderate", medical: "None",
-      dueDate: newMemberFeePaid ? nextDueStr : today,
-      status: newMemberFeePaid ? "Paid" : "Unpaid",
-      joinDate: today,
-      coins: 0, streak: 0, lastActive: today,
-      payments: initialPayments, workoutLog: {}, badges: [],
+  // Compress image to small size before saving to Firestore
+  const compressPhoto = (base64, maxSize = 200) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
     };
-    await setDoc(doc(db, "members", id), m);
-    setNewMember({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
-    setNewMemberPhoto(null);
-    setNewMemberFeePaid(false);
-    setModal(null);
-    showToast(newMemberFeePaid ? "✅ Member added & fee marked Paid!" : "✅ Member added — fee pending");
+    img.src = base64;
+  });
+
+  const addMember = async () => {
+    if (!newMember.name || !newMember.username || !newMember.password) {
+      showToast("❌ Fill all fields"); return;
+    }
+    try {
+      const id = `m${Date.now()}`;
+      const today = new Date().toISOString().split("T")[0];
+      const nextDue = new Date();
+      nextDue.setMonth(nextDue.getMonth() + 1);
+      const nextDueStr = nextDue.toISOString().split("T")[0];
+      const initialPayments = newMemberFeePaid
+        ? [{ date: today, amount: Number(newMember.fees), status: "Paid", method: "Cash" }]
+        : [];
+      // Compress photo if present to avoid Firestore size limit
+      let photo = null;
+      if (newMemberPhoto) {
+        photo = await compressPhoto(newMemberPhoto, 200);
+      }
+      const m = {
+        id, ...newMember, fees: Number(newMember.fees),
+        photo,
+        age: 25, height: 170, weight: 70, gender: "Male",
+        goal: "Maintenance", activity: "Moderate", medical: "None",
+        dueDate: newMemberFeePaid ? nextDueStr : today,
+        status: newMemberFeePaid ? "Paid" : "Unpaid",
+        joinDate: today,
+        coins: 0, streak: 0, lastActive: today,
+        payments: initialPayments, workoutLog: {}, badges: [],
+      };
+      await setDoc(doc(db, "members", id), m);
+      setNewMember({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
+      setNewMemberPhoto(null);
+      setNewMemberFeePaid(false);
+      setModal(null);
+      setActiveTab("members"); // ← redirect to members list
+      showToast(newMemberFeePaid ? "✅ Member added & fee marked Paid!" : "✅ Member added — fee pending");
+    } catch (err) {
+      console.error("addMember error:", err);
+      showToast("❌ Failed to add member. Try again.");
+    }
   };
 
   const deleteMember = async (id) => {
@@ -1267,134 +1421,19 @@ export default function App() {
         </div>
 
         {/* ── PAYMENT FLOW ── */}
-        {cu.status==="Unpaid" && paymentStep==="idle" && (
-          <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#1a0810,#0d1020)",border:"1px solid rgba(255,68,68,0.35)",borderRadius:20,padding:20}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-              <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(255,68,68,0.12)",border:"1px solid rgba(255,68,68,0.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:"var(--danger)",fontWeight:700,letterSpacing:0.5}}>🔴 PAYMENT OVERDUE</div>
-              <div style={{fontSize:28}}>💳</div>
-            </div>
-            <div style={{fontFamily:"Rajdhani",fontSize:42,fontWeight:700,color:"var(--danger)",margin:"6px 0 2px"}}>₹{cu.fees}</div>
-            <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Pay to UPI · <span style={{color:"var(--neon)",fontWeight:600}}>{OWNER.upiId}</span></div>
-            <button className="btn-primary" style={{background:"linear-gradient(135deg,#ff4444,#ff6b35)",boxShadow:"0 4px 20px rgba(255,68,68,0.4)"}} onClick={()=>setPaymentStep("choosing")}>
-              💳 PAY NOW ₹{cu.fees}
-            </button>
-          </div>
-        )}
-
-        {/* STEP 1 — Choose UPI App */}
-        {cu.status==="Unpaid" && paymentStep==="choosing" && (
-          <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(0,212,255,0.3)",borderRadius:20,padding:20}}>
-            <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Choose Payment App</div>
-            <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>You'll be redirected to complete ₹{cu.fees} payment</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-              {[
-                {name:"Google Pay",icon:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png",emoji:"🟢",scheme:"gpay"},
-                {name:"PhonePe",icon:null,emoji:"🟣",scheme:"phonepe"},
-                {name:"Paytm",icon:null,emoji:"🔵",scheme:"paytm"},
-                {name:"BHIM UPI",icon:null,emoji:"🇮🇳",scheme:"upi"},
-              ].map(app=>(
-                <button key={app.name} onClick={()=>{
-                  const upiUrl = `upi://pay?pa=${OWNER.upiId}&pn=Crossfit+Gym&am=${cu.fees}&tn=Gym+Membership+Fee&cu=INR`;
-                  window.open(upiUrl,"_blank");
-                  setTimeout(()=>setPaymentStep("redirected"),800);
-                }} style={{
-                  padding:"14px 10px",borderRadius:14,
-                  background:"var(--card)",border:"1px solid var(--border)",
-                  cursor:"pointer",transition:"all 0.2s",textAlign:"center",
-                  display:"flex",flexDirection:"column",alignItems:"center",gap:6,
-                }}>
-                  <span style={{fontSize:28}}>{app.emoji}</span>
-                  <span style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{app.name}</span>
-                </button>
-              ))}
-            </div>
-            <button onClick={()=>setPaymentStep("idle")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Cancel</button>
-          </div>
-        )}
-
-        {/* STEP 2 — Redirected, waiting for confirm */}
-        {cu.status==="Unpaid" && paymentStep==="redirected" && (
-          <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(255,215,0,0.35)",borderRadius:20,padding:24,textAlign:"center"}}>
-            <div style={{fontSize:48,marginBottom:12,animation:"pulse 1.5s ease-in-out infinite"}}>⏳</div>
-            <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,marginBottom:6}}>Complete Payment in UPI App</div>
-            <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.7,marginBottom:6}}>
-              Pay <span style={{color:"var(--danger)",fontWeight:700}}>₹{cu.fees}</span> to<br/>
-              <span style={{color:"var(--neon)",fontWeight:700,fontSize:15}}>{OWNER.upiId}</span>
-            </div>
-            <div style={{background:"rgba(255,215,0,0.08)",border:"1px solid rgba(255,215,0,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:18,fontSize:12,color:"var(--warning)"}}>
-              ⚠️ After paying in your UPI app, come back here and tap "I've Paid"
-            </div>
-            <button className="btn-primary" style={{marginBottom:10,background:"linear-gradient(135deg,var(--neon),#00cc66)",boxShadow:"0 4px 20px rgba(0,255,136,0.4)"}}
-              onClick={()=>setPaymentStep("confirming")}>
-              ✅ I've Paid — Confirm Payment
-            </button>
-            <br/>
-            <button onClick={()=>setPaymentStep("choosing")} style={{background:"transparent",border:"none",color:"var(--text3)",fontSize:13,cursor:"pointer",textDecoration:"underline"}}>
-              ← Try a different app
-            </button>
-          </div>
-        )}
-
-        {/* STEP 3 — Enter UTR / confirm */}
-        {cu.status==="Unpaid" && paymentStep==="confirming" && (()=>{
-          return (
-            <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.35)",borderRadius:20,padding:20}}>
-              <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Confirm Your Payment</div>
-              <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Select payment method and optionally enter UTR/reference number</div>
-              <div style={{marginBottom:12}}>
-                <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>Payment Method</div>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                  {["GPay","PhonePe","Paytm","BHIM","Cash"].map(m=>(
-                    <button key={m} id={`pm-${m}`} onClick={e=>{
-                      document.querySelectorAll("[id^='pm-']").forEach(b=>{b.style.background="var(--bg2)";b.style.borderColor="var(--border)";b.style.color="var(--text2)";});
-                      e.currentTarget.style.background="rgba(0,255,136,0.12)";
-                      e.currentTarget.style.borderColor="var(--neon)";
-                      e.currentTarget.style.color="var(--neon)";
-                      document.getElementById("selected-method").value=m;
-                    }} style={{padding:"8px 14px",borderRadius:20,border:"1px solid var(--border)",background:"var(--bg2)",color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>
-                      {m}
-                    </button>
-                  ))}
-                  <input id="selected-method" type="hidden" defaultValue="GPay"/>
-                </div>
-              </div>
-              <div style={{marginBottom:16}}>
-                <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>UTR / Transaction ID <span style={{color:"var(--text3)"}}>(optional)</span></div>
-                <input id="utr-input" className="input-field" placeholder="e.g. 123456789012" style={{letterSpacing:1}}/>
-              </div>
-              <button className="btn-primary" style={{marginBottom:10}} onClick={async ()=>{
-                const method = document.getElementById("selected-method")?.value || "UPI";
-                const utr = document.getElementById("utr-input")?.value?.trim();
-                await confirmMemberPayment(method, utr);
-                setPaymentStep("success");
-              }}>
-                🎉 CONFIRM & MARK AS PAID
-              </button>
-              <button onClick={()=>setPaymentStep("redirected")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Go Back</button>
-            </div>
-          );
-        })()}
-
-        {/* SUCCESS banner — shown briefly after payment */}
-        {(cu.status==="Paid" && paymentStep==="success") && (
-          <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1a10)",border:"1px solid rgba(0,255,136,0.4)",borderRadius:20,padding:24,textAlign:"center",animation:"slideUp 0.4s ease"}}>
-            <div style={{fontSize:52,marginBottom:10}}>🎉</div>
-            <div style={{fontFamily:"Rajdhani",fontSize:24,fontWeight:700,color:"var(--neon)",marginBottom:6}}>Payment Successful!</div>
-            <div style={{fontSize:13,color:"var(--text2)",marginBottom:14}}>Your membership is now active. See you at the gym! 💪</div>
-            <button className="btn-primary" onClick={()=>setPaymentStep("idle")}>Done</button>
-          </div>
-        )}
-
-        {/* Paid status card */}
-        {cu.status==="Paid" && paymentStep!=="success" && (
-          <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.25)",borderRadius:20,padding:16,display:"flex",alignItems:"center",gap:14}}>
-            <div style={{fontSize:36}}>✅</div>
-            <div>
-              <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--neon)"}}>Membership Active</div>
-              <div style={{fontSize:13,color:"var(--text2)"}}>Next due: <span style={{color:"var(--text)",fontWeight:600}}>{cu.dueDate}</span></div>
-            </div>
-          </div>
-        )}
+        <PaymentFlow cu={cu} upiId={gymUpiId} onPaid={async (method, utr) => {
+          const today = new Date().toISOString().split("T")[0];
+          const nextDue = new Date();
+          nextDue.setMonth(nextDue.getMonth() + 1);
+          const newPayment = { date: today, amount: Number(cu.fees), status: "Paid", method, ...(utr ? { utr } : {}) };
+          const updatedPayments = [newPayment, ...(cu.payments || [])];
+          await updateDoc(doc(db, "members", user.id), {
+            status: "Paid",
+            dueDate: nextDue.toISOString().split("T")[0],
+            payments: updatedPayments,
+          });
+          showToast("🎉 Payment confirmed! Membership active!");
+        }} />
 
         <div className="section-header"><div className="section-title">Payment History</div></div>
         <div className="card">
@@ -1489,25 +1528,67 @@ export default function App() {
     );
   };
 
-  const SettingsSection = () => (
-    <div>
-      <div style={{padding:"16px 16px 8px"}}><div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>Settings</div></div>
-      <div className="card">
-        {role==="owner"&&<div className="info-row"><span className="info-key">UPI ID</span><span className="info-val text-neon">{OWNER.upiId}</span></div>}
-        <div className="info-row"><span className="info-key">Account</span><span className="info-val">{user.name}</span></div>
-        <div className="info-row"><span className="info-key">Role</span><span className="info-val">{role==="owner"?"👑 Owner":"👤 Member"}</span></div>
-        <div className="info-row"><span className="info-key">Database</span><span className="info-val" style={{color:"var(--neon)"}}>🟢 Firebase</span></div>
-        <div className="info-row"><span className="info-key">Theme</span><span className="info-val">🌑 Dark</span></div>
+  const SettingsSection = () => {
+    const [editUpi, setEditUpi] = useState(false);
+    const [upiInput, setUpiInput] = useState(gymUpiId);
+    const saveUpi = async () => {
+      if (!upiInput.trim()) { showToast("❌ UPI ID cannot be empty"); return; }
+      await setDoc(doc(db, "settings", "gym"), { upiId: upiInput.trim() });
+      setGymUpiId(upiInput.trim());
+      setEditUpi(false);
+      showToast("✅ UPI ID updated!");
+    };
+    return (
+      <div>
+        <div style={{padding:"16px 16px 8px"}}><div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>Settings</div></div>
+
+        {/* UPI ID card for owner */}
+        {role==="owner" && (
+          <div className="card" style={{marginBottom:14}}>
+            <div className="card-title">💳 Payment Settings</div>
+            <div style={{marginBottom:8,fontSize:13,color:"var(--text2)"}}>Members will pay to this UPI ID</div>
+            {editUpi ? (
+              <div>
+                <input
+                  className="input-field"
+                  value={upiInput}
+                  onChange={e=>setUpiInput(e.target.value)}
+                  placeholder="e.g. yourname@okaxis or 9876543210@ybl"
+                  style={{marginBottom:10}}
+                />
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn-success" style={{flex:1,padding:"10px"}} onClick={saveUpi}>✅ Save</button>
+                  <button className="btn-secondary" style={{flex:1}} onClick={()=>{setEditUpi(false);setUpiInput(gymUpiId);}}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:12,padding:"12px 14px",border:"1px solid var(--border)"}}>
+                <div>
+                  <div style={{fontSize:11,color:"var(--text3)",marginBottom:3}}>CURRENT UPI ID</div>
+                  <div style={{fontSize:16,fontWeight:700,color:"var(--neon)",letterSpacing:0.5}}>{gymUpiId}</div>
+                </div>
+                <button className="btn-secondary" onClick={()=>setEditUpi(true)}>✏️ Edit</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="card">
+          <div className="info-row"><span className="info-key">Account</span><span className="info-val">{user.name}</span></div>
+          <div className="info-row"><span className="info-key">Role</span><span className="info-val">{role==="owner"?"👑 Owner":"👤 Member"}</span></div>
+          <div className="info-row"><span className="info-key">Database</span><span className="info-val" style={{color:"var(--neon)"}}>🟢 Firebase</span></div>
+          <div className="info-row"><span className="info-key">Theme</span><span className="info-val">🌑 Dark</span></div>
+        </div>
+        <div className="card">
+          <div className="card-title">🔔 Notifications</div>
+          {["Payment Reminders","Workout Alerts","Streak Notifications","AI Plan Updates"].map(n=>(
+            <div key={n} className="info-row"><span className="info-key">{n}</span><div style={{width:36,height:20,background:"var(--neon)",borderRadius:10,position:"relative",cursor:"pointer"}}><div style={{position:"absolute",right:2,top:2,width:16,height:16,background:"#000",borderRadius:"50%"}}/></div></div>
+          ))}
+        </div>
+        <div style={{padding:"0 16px"}}><button className="btn-danger" style={{width:"100%",padding:"14px",fontSize:15}} onClick={handleLogout}>🚪 Logout</button></div>
       </div>
-      <div className="card">
-        <div className="card-title">🔔 Notifications</div>
-        {["Payment Reminders","Workout Alerts","Streak Notifications","AI Plan Updates"].map(n=>(
-          <div key={n} className="info-row"><span className="info-key">{n}</span><div style={{width:36,height:20,background:"var(--neon)",borderRadius:10,position:"relative",cursor:"pointer"}}><div style={{position:"absolute",right:2,top:2,width:16,height:16,background:"#000",borderRadius:"50%"}}/></div></div>
-        ))}
-      </div>
-      <div style={{padding:"0 16px"}}><button className="btn-danger" style={{width:"100%",padding:"14px",fontSize:15}} onClick={handleLogout}>🚪 Logout</button></div>
-    </div>
-  );
+    );
+  };
 
   // ── Modals ──
   const renderModal = () => {
