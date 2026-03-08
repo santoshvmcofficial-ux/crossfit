@@ -24,17 +24,6 @@ const MONTHLY_REVENUE = [
   { month: "Jan", revenue: 51000 }, { month: "Feb", revenue: 47000 },
 ];
 
-const WORKOUT_TASKS = [
-  { id: "t1", name: "Chest Day", icon: "💪", coins: 30, category: "Strength" },
-  { id: "t2", name: "Cardio", icon: "🏃", coins: 20, category: "Cardio" },
-  { id: "t3", name: "Legs Day", icon: "🦵", coins: 30, category: "Strength" },
-  { id: "t4", name: "Back & Biceps", icon: "🏋️", coins: 30, category: "Strength" },
-  { id: "t5", name: "Yoga", icon: "🧘", coins: 15, category: "Flexibility" },
-  { id: "t6", name: "HIIT", icon: "⚡", coins: 35, category: "Cardio" },
-  { id: "t7", name: "Shoulder Day", icon: "🎯", coins: 30, category: "Strength" },
-  { id: "t8", name: "Core & Abs", icon: "🔥", coins: 20, category: "Core" },
-];
-
 // ─── Daily Workout Schedule ───────────────────────────────────────────────────
 const DAILY_WORKOUTS = {
   0: { // Sunday
