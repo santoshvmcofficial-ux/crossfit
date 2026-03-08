@@ -35,6 +35,87 @@ const WORKOUT_TASKS = [
   { id: "t8", name: "Core & Abs", icon: "🔥", coins: 20, category: "Core" },
 ];
 
+// ─── Daily Workout Schedule ───────────────────────────────────────────────────
+const DAILY_WORKOUTS = {
+  0: { // Sunday
+    day: "Sunday", focus: "Rest & Recovery", color: "#8b5cf6", bg: "rgba(139,92,246,0.08)",
+    exercises: [
+      { name: "Foam Rolling", sets: "10 min", reps: "Full body", muscle: "Recovery", anim: "foam" },
+      { name: "Light Stretching", sets: "3 sets", reps: "30 sec each", muscle: "Flexibility", anim: "stretch" },
+      { name: "Deep Breathing", sets: "5 min", reps: "Box breathing", muscle: "Mind", anim: "breath" },
+      { name: "Hip Flexor Stretch", sets: "3 sets", reps: "45 sec", muscle: "Hips", anim: "hip" },
+      { name: "Cat-Cow Stretch", sets: "3 sets", reps: "10 reps", muscle: "Spine", anim: "camel" },
+      { name: "Child's Pose", sets: "3 sets", reps: "60 sec", muscle: "Back", anim: "child" },
+    ]
+  },
+  1: { // Monday
+    day: "Monday", focus: "Chest Day 💪", color: "#00ff88", bg: "rgba(0,255,136,0.08)",
+    exercises: [
+      { name: "Bench Press", sets: "4 sets", reps: "8-10 reps", muscle: "Chest", anim: "bench" },
+      { name: "Incline DB Press", sets: "3 sets", reps: "10-12 reps", muscle: "Upper Chest", anim: "incline" },
+      { name: "Cable Flyes", sets: "3 sets", reps: "12-15 reps", muscle: "Chest", anim: "fly" },
+      { name: "Push-Ups", sets: "3 sets", reps: "15-20 reps", muscle: "Chest & Triceps", anim: "pushup" },
+      { name: "Dips", sets: "3 sets", reps: "10-12 reps", muscle: "Lower Chest", anim: "dip" },
+      { name: "Chest Press Machine", sets: "3 sets", reps: "12 reps", muscle: "Chest", anim: "machine" },
+    ]
+  },
+  2: { // Tuesday
+    day: "Tuesday", focus: "Back Day 🏋️", color: "#00d4ff", bg: "rgba(0,212,255,0.08)",
+    exercises: [
+      { name: "Deadlift", sets: "4 sets", reps: "6-8 reps", muscle: "Full Back", anim: "deadlift" },
+      { name: "Pull-Ups", sets: "4 sets", reps: "8-10 reps", muscle: "Lats", anim: "pullup" },
+      { name: "Barbell Row", sets: "3 sets", reps: "8-10 reps", muscle: "Mid Back", anim: "row" },
+      { name: "Lat Pulldown", sets: "3 sets", reps: "12 reps", muscle: "Lats", anim: "pulldown" },
+      { name: "Seated Cable Row", sets: "3 sets", reps: "12 reps", muscle: "Back", anim: "cablerow" },
+      { name: "Face Pulls", sets: "3 sets", reps: "15 reps", muscle: "Rear Delts", anim: "facepull" },
+    ]
+  },
+  3: { // Wednesday
+    day: "Wednesday", focus: "Biceps & Triceps 💥", color: "#ff6b35", bg: "rgba(255,107,53,0.08)",
+    exercises: [
+      { name: "Barbell Curl", sets: "4 sets", reps: "10-12 reps", muscle: "Biceps", anim: "curl" },
+      { name: "Hammer Curl", sets: "3 sets", reps: "12 reps", muscle: "Brachialis", anim: "hammer" },
+      { name: "Tricep Dips", sets: "4 sets", reps: "10-12 reps", muscle: "Triceps", anim: "tricdip" },
+      { name: "Skull Crushers", sets: "3 sets", reps: "10-12 reps", muscle: "Triceps", anim: "skull" },
+      { name: "Concentration Curl", sets: "3 sets", reps: "12 reps", muscle: "Biceps Peak", anim: "conc" },
+      { name: "Tricep Pushdown", sets: "3 sets", reps: "15 reps", muscle: "Triceps", anim: "pushdown" },
+    ]
+  },
+  4: { // Thursday
+    day: "Thursday", focus: "Shoulder Day 🎯", color: "#ffd700", bg: "rgba(255,215,0,0.08)",
+    exercises: [
+      { name: "Overhead Press", sets: "4 sets", reps: "8-10 reps", muscle: "All Delts", anim: "ohp" },
+      { name: "Lateral Raises", sets: "4 sets", reps: "12-15 reps", muscle: "Side Delts", anim: "lateral" },
+      { name: "Front Raises", sets: "3 sets", reps: "12 reps", muscle: "Front Delts", anim: "front" },
+      { name: "Rear Delt Flyes", sets: "3 sets", reps: "15 reps", muscle: "Rear Delts", anim: "rear" },
+      { name: "Arnold Press", sets: "3 sets", reps: "10-12 reps", muscle: "Full Shoulder", anim: "arnold" },
+      { name: "Shrugs", sets: "4 sets", reps: "15 reps", muscle: "Traps", anim: "shrug" },
+    ]
+  },
+  5: { // Friday
+    day: "Friday", focus: "Legs Day 🦵", color: "#ff4444", bg: "rgba(255,68,68,0.08)",
+    exercises: [
+      { name: "Barbell Squat", sets: "4 sets", reps: "8-10 reps", muscle: "Quads & Glutes", anim: "squat" },
+      { name: "Romanian Deadlift", sets: "3 sets", reps: "10-12 reps", muscle: "Hamstrings", anim: "rdl" },
+      { name: "Leg Press", sets: "4 sets", reps: "12 reps", muscle: "Quads", anim: "legpress" },
+      { name: "Lunges", sets: "3 sets", reps: "12 each leg", muscle: "Legs", anim: "lunge" },
+      { name: "Leg Curl", sets: "3 sets", reps: "12-15 reps", muscle: "Hamstrings", anim: "legcurl" },
+      { name: "Calf Raises", sets: "5 sets", reps: "20 reps", muscle: "Calves", anim: "calf" },
+    ]
+  },
+  6: { // Saturday
+    day: "Saturday", focus: "Core & Cardio ⚡", color: "#00ff88", bg: "rgba(0,255,136,0.08)",
+    exercises: [
+      { name: "Plank", sets: "4 sets", reps: "60 sec hold", muscle: "Core", anim: "plank" },
+      { name: "Crunches", sets: "4 sets", reps: "20 reps", muscle: "Abs", anim: "crunch" },
+      { name: "Russian Twists", sets: "3 sets", reps: "20 reps", muscle: "Obliques", anim: "twist" },
+      { name: "Leg Raises", sets: "3 sets", reps: "15 reps", muscle: "Lower Abs", anim: "legraise" },
+      { name: "Burpees", sets: "4 sets", reps: "10 reps", muscle: "Full Body", anim: "burpee" },
+      { name: "Mountain Climbers", sets: "3 sets", reps: "30 sec", muscle: "Core & Cardio", anim: "mountain" },
+    ]
+  },
+};
+
 // ─── Seed Members (only used if Firestore is empty) ───────────────────────────
 const SEED_MEMBERS = [
   {
@@ -266,6 +347,13 @@ const css = `
     justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.3s;
   }
   .icon-btn:hover { border-color: var(--neon); }
+  .back-btn {
+    width: 36px; height: 36px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 20px; font-weight: 700; color: var(--neon);
+    transition: all 0.3s; margin-right: 8px; flex-shrink: 0;
+  }
+  .back-btn:hover { border-color: var(--neon); background: rgba(0,255,136,0.1); transform: translateX(-2px); }
 
   .bottom-nav {
     position: sticky; bottom: 0; background: var(--bg2);
@@ -911,6 +999,67 @@ function AIPlanSection({ user, members, showToast }) {
   );
 }
 
+// ─── Exercise Animation Component ────────────────────────────────────────────
+function ExerciseAnim({ type, color }) {
+  const c = color || "#00ff88";
+  const anims = {
+    // Chest
+    bench: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="45" width="60" height="8" rx="4" fill={c} opacity="0.3"/><circle cx="40" cy="30" r="10" fill={c} opacity="0.7"/><line x1="40" y1="40" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="20" y2="38" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="60" y2="38" stroke={c} strokeWidth="3"/><rect x="8" y="35" width="8" height="4" rx="2" fill={c}/><rect x="64" y="35" width="8" height="4" rx="2" fill={c}/><animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
+    pushup: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="20" cy="28" r="8" fill={c} opacity="0.8"/><line x1="28" y1="32" x2="55" y2="48" stroke={c} strokeWidth="3"/><line x1="55" y1="48" x2="68" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="55" y1="48" x2="55" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,6;0,0" dur="1.2s" repeatCount="indefinite"/></svg>,
+    incline: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="50" width="70" height="6" rx="3" fill={c} opacity="0.2"/><rect x="5" y="40" width="50" height="12" rx="4" fill={c} opacity="0.25" transform="rotate(-15 30 46)"/><circle cx="30" cy="28" r="9" fill={c} opacity="0.8"/><line x1="30" y1="37" x2="38" y2="50" stroke={c} strokeWidth="3"/><line x1="38" y1="45" x2="15" y2="38" stroke={c} strokeWidth="2.5"/><line x1="38" y1="45" x2="58" y2="38" stroke={c} strokeWidth="2.5"/><rect x="8" y="34" width="8" height="5" rx="2" fill={c}/><rect x="56" y="34" width="8" height="5" rx="2" fill={c}/><animateTransform attributeName="transform" type="translate" values="0,0;0,-5;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
+    fly: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="50" stroke={c} strokeWidth="3"/><path d="M40,40 Q20,30 12,38" stroke={c} strokeWidth="3" fill="none"/><path d="M40,40 Q60,30 68,38" stroke={c} strokeWidth="3" fill="none"/><circle cx="12" cy="38" r="5" fill={c} opacity="0.5"/><circle cx="68" cy="38" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="2s" repeatCount="indefinite"/></svg>,
+    dip: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="20" width="6" height="45" rx="3" fill={c} opacity="0.4"/><rect x="66" y="20" width="6" height="45" rx="3" fill={c} opacity="0.4"/><rect x="8" y="18" width="64" height="6" rx="3" fill={c} opacity="0.3"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="52" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,8;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    machine: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="10" width="70" height="60" rx="8" fill={c} opacity="0.08" stroke={c} strokeWidth="1.5"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="42" stroke={c} strokeWidth="3"/><rect x="18" y="38" width="8" height="8" rx="2" fill={c} opacity="0.5"/><rect x="54" y="38" width="8" height="8" rx="2" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
+    // Back
+    deadlift: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="25" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="55" y2="48" stroke={c} strokeWidth="3"/><rect x="10" y="58" width="60" height="6" rx="3" fill={c} opacity="0.4"/><rect x="8" y="54" width="10" height="10" rx="5" fill={c} opacity="0.6"/><rect x="62" y="54" width="10" height="10" rx="5" fill={c} opacity="0.6"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
+    pullup: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="8" width="70" height="8" rx="4" fill={c} opacity="0.4"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="16" x2="40" y2="26" stroke={c} strokeWidth="3"/><line x1="40" y1="44" x2="40" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="52" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,6;0,0;0,6" dur="1.5s" repeatCount="indefinite"/></svg>,
+    row: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="20" cy="30" r="8" fill={c} opacity="0.8"/><line x1="28" y1="34" x2="40" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="28" y1="38" x2="65" y2="38" stroke={c} strokeWidth="3"/><rect x="60" y="34" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;-6,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    pulldown: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="5" width="70" height="6" rx="3" fill={c} opacity="0.35"/><line x1="40" y1="11" x2="20" y2="28" stroke={c} strokeWidth="2.5"/><line x1="40" y1="11" x2="60" y2="28" stroke={c} strokeWidth="2.5"/><circle cx="40" cy="38" r="9" fill={c} opacity="0.8"/><line x1="40" y1="47" x2="40" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="28" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="52" y2="64" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,-4;0,4;0,-4" dur="1.5s" repeatCount="indefinite"/></svg>,
+    cablerow: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="35" width="20" height="30" rx="4" fill={c} opacity="0.2" stroke={c} strokeWidth="1"/><circle cx="55" cy="32" r="9" fill={c} opacity="0.8"/><line x1="25" y1="50" x2="48" y2="40" stroke={c} strokeWidth="3"/><line x1="55" y1="41" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="55" y1="50" x2="43" y2="62" stroke={c} strokeWidth="3"/><line x1="55" y1="50" x2="67" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;-5,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    facepull: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="60" y="20" width="15" height="40" rx="4" fill={c} opacity="0.2"/><circle cx="28" cy="30" r="9" fill={c} opacity="0.8"/><line x1="37" y1="33" x2="60" y2="38" stroke={c} strokeWidth="3"/><line x1="37" y1="37" x2="37" y2="55" stroke={c} strokeWidth="3"/><line x1="37" y1="46" x2="25" y2="58" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;-6,0;0,0" dur="1.3s" repeatCount="indefinite"/></svg>,
+    // Arms
+    curl: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="45" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="25" y2="38" stroke={c} strokeWidth="3"/><rect x="12" y="34" width="14" height="6" rx="3" fill={c} opacity="0.5"/><line x1="40" y1="45" x2="55" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="28" y2="66" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 25 38;-15 25 38;0 25 38" dur="1.4s" repeatCount="indefinite"/></svg>,
+    hammer: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="28" y2="42" stroke={c} strokeWidth="3"/><rect x="14" y="36" width="15" height="12" rx="4" fill={c} opacity="0.5"/><line x1="40" y1="48" x2="52" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="58" x2="28" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 28 42;-12 28 42;0 28 42" dur="1.5s" repeatCount="indefinite"/></svg>,
+    tricdip: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="55" width="64" height="6" rx="3" fill={c} opacity="0.3"/><circle cx="40" cy="28" r="9" fill={c} opacity="0.8"/><line x1="40" y1="37" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="60" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,8;0,0" dur="1.3s" repeatCount="indefinite"/></svg>,
+    skull: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="48" width="60" height="8" rx="4" fill={c} opacity="0.3"/><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="24" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="56" y2="42" stroke={c} strokeWidth="3"/><rect x="14" y="38" width="10" height="6" rx="3" fill={c} opacity="0.5"/><rect x="56" y="38" width="10" height="6" rx="3" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    conc: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="35" cy="18" r="9" fill={c} opacity="0.8"/><line x1="35" y1="27" x2="35" y2="45" stroke={c} strokeWidth="3"/><line x1="35" y1="45" x2="20" y2="40" stroke={c} strokeWidth="3"/><rect x="8" y="36" width="13" height="7" rx="3" fill={c} opacity="0.5"/><rect x="8" y="55" width="64" height="6" rx="3" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="rotate" values="0 20 40;-18 20 40;0 20 40" dur="1.4s" repeatCount="indefinite"/></svg>,
+    pushdown: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="30" y="5" width="20" height="8" rx="4" fill={c} opacity="0.4"/><line x1="40" y1="13" x2="40" y2="26" stroke={c} strokeWidth="2.5"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="28" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="52" y2="48" stroke={c} strokeWidth="3"/><rect x="23" y="62" width="34" height="6" rx="3" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,-4;0,4;0,-4" dur="1.3s" repeatCount="indefinite"/></svg>,
+    // Shoulders
+    ohp: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="38" r="9" fill={c} opacity="0.8"/><line x1="40" y1="47" x2="40" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="28" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="52" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="34" x2="18" y2="34" stroke={c} strokeWidth="3"/><line x1="40" y1="34" x2="62" y2="34" stroke={c} strokeWidth="3"/><rect x="8" y="30" width="10" height="8" rx="4" fill={c} opacity="0.5"/><rect x="62" y="30" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
+    lateral: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="25" r="9" fill={c} opacity="0.8"/><line x1="40" y1="34" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="22" y2="32" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="58" y2="32" stroke={c} strokeWidth="3"/><circle cx="18" cy="30" r="5" fill={c} opacity="0.4"/><circle cx="62" cy="30" r="5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    front: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="28" r="9" fill={c} opacity="0.8"/><line x1="40" y1="37" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="47" x2="28" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="47" x2="52" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="43" x2="22" y2="43" stroke={c} strokeWidth="3"/><circle cx="18" cy="43" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="rotate" values="0 22 43;-25 22 43;0 22 43" dur="1.6s" repeatCount="indefinite"/></svg>,
+    rear: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="50" stroke={c} strokeWidth="3" transform="rotate(15 40 40)"/><line x1="40" y1="42" x2="20" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="60" y2="55" stroke={c} strokeWidth="3"/><circle cx="16" cy="53" r="5" fill={c} opacity="0.4"/><circle cx="64" cy="53" r="5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
+    arnold: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="52" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="22" y2="30" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="58" y2="30" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 30;15 40 30;0 40 30" dur="2s" repeatCount="indefinite"/></svg>,
+    shrug: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="22" y2="36" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="58" y2="36" stroke={c} strokeWidth="3"/><rect x="12" y="32" width="10" height="8" rx="4" fill={c} opacity="0.5"/><rect x="58" y="32" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1.2s" repeatCount="indefinite"/></svg>,
+    // Legs
+    squat: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="45" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="25" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="55" y2="62" stroke={c} strokeWidth="3"/><rect x="12" y="13" width="56" height="7" rx="3.5" fill={c} opacity="0.3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,10;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
+    rdl: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="42" stroke={c} strokeWidth="3" transform="rotate(25 40 34)"/><line x1="40" y1="42" x2="25" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="55" y2="58" stroke={c} strokeWidth="3"/><rect x="14" y="60" width="52" height="7" rx="3.5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;20 40 40;0 40 40" dur="1.6s" repeatCount="indefinite"/></svg>,
+    legpress: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="30" width="30" height="40" rx="6" fill={c} opacity="0.15" stroke={c} strokeWidth="1"/><circle cx="20" cy="22" r="8" fill={c} opacity="0.8"/><line x1="20" y1="30" x2="20" y2="46" stroke={c} strokeWidth="3"/><line x1="20" y1="38" x2="38" y2="38" stroke={c} strokeWidth="3"/><rect x="38" y="28" width="35" height="22" rx="5" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="translate" values="0,0;8,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
+    lunge: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="38" cy="16" r="9" fill={c} opacity="0.8"/><line x1="38" y1="25" x2="38" y2="42" stroke={c} strokeWidth="3"/><line x1="38" y1="42" x2="22" y2="62" stroke={c} strokeWidth="3"/><line x1="38" y1="42" x2="58" y2="55" stroke={c} strokeWidth="3"/><line x1="58" y1="55" x2="58" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,6;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
+    legcurl: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="30" width="70" height="10" rx="5" fill={c} opacity="0.2"/><circle cx="22" cy="22" r="8" fill={c} opacity="0.8"/><line x1="22" y1="30" x2="22" y2="46" stroke={c} strokeWidth="3"/><line x1="22" y1="38" x2="55" y2="38" stroke={c} strokeWidth="3"/><line x1="55" y1="38" x2="62" y2="22" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 55 38;-35 55 38;0 55 38" dur="1.4s" repeatCount="indefinite"/></svg>,
+    calf: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="50" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="28" y2="68" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="52" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="0.9s" repeatCount="indefinite"/></svg>,
+    // Core & Cardio
+    plank: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="15" cy="35" r="8" fill={c} opacity="0.8"/><line x1="23" y1="38" x2="62" y2="44" stroke={c} strokeWidth="4"/><line x1="30" y1="40" x2="30" y2="56" stroke={c} strokeWidth="3"/><line x1="55" y1="43" x2="55" y2="58" stroke={c} strokeWidth="3"/><rect x="8" y="58" width="64" height="5" rx="2.5" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="2s" repeatCount="indefinite"/></svg>,
+    crunch: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="55" width="64" height="8" rx="4" fill={c} opacity="0.2"/><circle cx="35" cy="28" r="9" fill={c} opacity="0.8"/><path d="M35,37 Q40,50 50,55" stroke={c} strokeWidth="3" fill="none"/><line x1="50" y1="55" x2="62" y2="55" stroke={c} strokeWidth="3"/><line x1="35" y1="45" x2="20" y2="55" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 50;-20 40 50;0 40 50" dur="1.3s" repeatCount="indefinite"/></svg>,
+    twist: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="20" y2="35" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="60" y2="35" stroke={c} strokeWidth="3"/><circle cx="16" cy="33" r="5" fill={c} opacity="0.5"/><circle cx="64" cy="33" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;15 40 40;-15 40 40;0 40 40" dur="1.5s" repeatCount="indefinite"/></svg>,
+    legraise: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="50" width="64" height="8" rx="4" fill={c} opacity="0.2"/><circle cx="22" cy="28" r="8" fill={c} opacity="0.8"/><line x1="22" y1="36" x2="22" y2="52" stroke={c} strokeWidth="3"/><line x1="22" y1="45" x2="38" y2="52" stroke={c} strokeWidth="3"/><line x1="38" y1="52" x2="62" y2="28" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 38 52;-30 38 52;0 38 52" dur="1.4s" repeatCount="indefinite"/></svg>,
+    burpee: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="14" r="8" fill={c} opacity="0.8"/><line x1="40" y1="22" x2="40" y2="40" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="26" y2="24" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="54" y2="24" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="28" y2="56" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="52" y2="56" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-10;0,20;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
+    mountain: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="14" cy="32" r="7" fill={c} opacity="0.8"/><line x1="21" y1="35" x2="55" y2="42" stroke={c} strokeWidth="3"/><line x1="36" y1="38" x2="36" y2="54" stroke={c} strokeWidth="3"/><line x1="55" y1="42" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="36" y1="54" x2="28" y2="66" stroke={c} strokeWidth="2.5"/><line x1="55" y1="58" x2="65" y2="66" stroke={c} strokeWidth="2.5"/><animateTransform attributeName="transform" type="translate" values="0,0;5,0;0,0;-5,0;0,0" dur="0.8s" repeatCount="indefinite"/></svg>,
+    // Recovery
+    foam: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="50" width="60" height="14" rx="7" fill={c} opacity="0.3"/><circle cx="25" cy="35" r="8" fill={c} opacity="0.8"/><line x1="25" y1="43" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="65" y2="52" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;5,0;0,0" dur="2s" repeatCount="indefinite"/></svg>,
+    stretch: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="36" x2="16" y2="28" stroke={c} strokeWidth="3"/><line x1="40" y1="36" x2="64" y2="28" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="65" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="65" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;8 40 40;-8 40 40;0 40 40" dur="3s" repeatCount="indefinite"/></svg>,
+    breath: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="28" fill="none" stroke={c} strokeWidth="2" opacity="0.3"><animate attributeName="r" values="20;30;20" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.1;0.5" dur="3s" repeatCount="indefinite"/></circle><circle cx="40" cy="40" r="14" fill={c} opacity="0.6"><animate attributeName="r" values="10;18;10" dur="3s" repeatCount="indefinite"/></circle></svg>,
+    hip: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="30" cy="22" r="8" fill={c} opacity="0.8"/><line x1="30" y1="30" x2="30" y2="48" stroke={c} strokeWidth="3"/><line x1="30" y1="42" x2="15" y2="55" stroke={c} strokeWidth="3"/><line x1="30" y1="42" x2="55" y2="38" stroke={c} strokeWidth="3"/><line x1="55" y1="38" x2="62" y2="55" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 30 42;10 30 42;0 30 42" dur="2s" repeatCount="indefinite"/></svg>,
+    camel: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><path d="M40,31 Q25,45 40,55 Q55,45 40,31" stroke={c} strokeWidth="3" fill="none"><animate attributeName="d" values="M40,31 Q25,45 40,55 Q55,45 40,31;M40,31 Q22,50 40,60 Q58,50 40,31;M40,31 Q25,45 40,55 Q55,45 40,31" dur="2s" repeatCount="indefinite"/></path><line x1="30" y1="55" x2="25" y2="68" stroke={c} strokeWidth="3"/><line x1="50" y1="55" x2="55" y2="68" stroke={c} strokeWidth="3"/></svg>,
+    child: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="65" cy="30" r="8" fill={c} opacity="0.8"/><path d="M65,38 Q55,48 35,50" stroke={c} strokeWidth="3" fill="none"/><line x1="35" y1="50" x2="12" y2="50" stroke={c} strokeWidth="3"/><line x1="35" y1="50" x2="30" y2="62" stroke={c} strokeWidth="2.5"/><line x1="50" y1="46" x2="50" y2="62" stroke={c} strokeWidth="2.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,3;0,0" dur="3s" repeatCount="indefinite"/></svg>,
+  };
+  return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",width:80,height:80,filter:`drop-shadow(0 0 8px ${c}55)`}}>
+      {anims[type] || anims.stretch}
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
 // ─── PaymentFlow Component ────────────────────────────────────────────────────
@@ -1140,10 +1289,13 @@ export default function App() {
     img.src = base64;
   });
 
+  const [addingMember, setAddingMember] = useState(false);
+
   const addMember = async () => {
     if (!newMember.name || !newMember.username || !newMember.password) {
-      showToast("❌ Fill all fields"); return;
+      showToast("❌ Fill all fields — Name, Username and Password required"); return;
     }
+    setAddingMember(true);
     try {
       const id = `m${Date.now()}`;
       const today = new Date().toISOString().split("T")[0];
@@ -1174,11 +1326,13 @@ export default function App() {
       setNewMemberPhoto(null);
       setNewMemberFeePaid(false);
       setModal(null);
-      setActiveTab("members"); // ← redirect to members list
+      setActiveTab("members");
       showToast(newMemberFeePaid ? "✅ Member added & fee marked Paid!" : "✅ Member added — fee pending");
     } catch (err) {
       console.error("addMember error:", err);
-      showToast("❌ Failed to add member. Try again.");
+      showToast("❌ Error: " + (err.message || "Failed to add member"));
+    } finally {
+      setAddingMember(false);
     }
   };
 
@@ -1432,36 +1586,171 @@ export default function App() {
     );
   };
 
-  const MemberWorkout = () => (
-    <div>
-      <div style={{padding:"16px 16px 4px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div><div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>Today's Tasks</div><div style={{fontSize:13,color:"var(--text2)",marginTop:2}}>Complete to earn coins 🪙</div></div>
-          <div className="streak-display"><span className="streak-fire">🔥</span><span className="streak-num">{user.streak}</span></div>
-        </div>
-        <div className="progress-wrap mt-12"><div className="progress-label"><span className="text-sm text-muted">Daily Progress</span><span className="text-sm text-neon">{completedTasks.length}/{WORKOUT_TASKS.length}</span></div><div className="progress-bar-bg"><div className="progress-bar-fill progress-neon" style={{width:`${(completedTasks.length/WORKOUT_TASKS.length)*100}%`}}/></div></div>
-      </div>
-      <div className="task-grid">
-        {WORKOUT_TASKS.map(t=>(
-          <div key={t.id} className={`task-card${completedTasks.includes(t.id)?" completed":""}`} onClick={()=>completeTask(t)}>
-            <span className="task-icon">{t.icon}</span>
-            <div className="task-name">{t.name}</div>
-            <div className="task-coins">🪙 +{t.coins}</div>
-            <div className="task-category">{t.category}</div>
+  const MemberWorkout = () => {
+    const today = new Date();
+    const dayIdx = today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const todayWorkout = DAILY_WORKOUTS[dayIdx];
+    const dateStr = today.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" });
+    const [doneExercises, setDoneExercises] = useState([]);
+    const [selectedDay, setSelectedDay] = useState(dayIdx);
+    const viewWorkout = DAILY_WORKOUTS[selectedDay];
+
+    const toggleExercise = (idx) => {
+      setDoneExercises(prev =>
+        prev.includes(idx) ? prev.filter(i=>i!==idx) : [...prev, idx]
+      );
+    };
+
+    return (
+      <div style={{paddingBottom:24}}>
+
+        {/* ── Today Banner ── */}
+        <div style={{
+          margin:"16px 16px 14px",
+          background:`linear-gradient(135deg, ${todayWorkout.bg.replace("0.08","0.15")}, rgba(0,0,0,0.3))`,
+          border:`1px solid ${todayWorkout.color}44`,
+          borderRadius:20, padding:"18px 20px",
+          position:"relative", overflow:"hidden",
+        }}>
+          <div style={{position:"absolute",top:-20,right:-20,fontSize:80,opacity:0.06,lineHeight:1}}>💪</div>
+          <div style={{fontSize:11,color:todayWorkout.color,fontWeight:700,letterSpacing:2,marginBottom:4}}>TODAY · {dateStr.toUpperCase()}</div>
+          <div style={{fontFamily:"Rajdhani",fontSize:26,fontWeight:700,color:"var(--text)",marginBottom:6}}>{todayWorkout.focus}</div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{background:`${todayWorkout.color}22`,border:`1px solid ${todayWorkout.color}44`,borderRadius:20,padding:"4px 12px",fontSize:12,color:todayWorkout.color,fontWeight:600}}>
+              {todayWorkout.exercises.length} Exercises
+            </div>
+            <div style={{fontSize:12,color:"var(--text2)"}}>🪙 +{todayWorkout.exercises.length * 10} coins on completion</div>
           </div>
-        ))}
-      </div>
-      {completedTasks.length>0&&(
-        <div className="card" style={{marginTop:12,background:"rgba(0,255,136,0.05)",borderColor:"rgba(0,255,136,0.2)"}}>
-          <div className="text-center">
-            <div style={{fontSize:28,marginBottom:8}}>🎉</div>
-            <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700}}>Today: {completedTasks.length} tasks done</div>
-            <div className="coin-display" style={{justifyContent:"center",marginTop:8}}><span className="coin-icon">🪙</span><span className="coin-value" style={{fontSize:26}}>{memberCoins}</span><span style={{fontSize:13,color:"var(--text2)"}}>total coins</span></div>
+          {/* Progress bar */}
+          {selectedDay === dayIdx && (
+            <div style={{marginTop:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <span style={{fontSize:11,color:"var(--text3)"}}>Today's Progress</span>
+                <span style={{fontSize:11,color:todayWorkout.color,fontWeight:700}}>{doneExercises.length}/{todayWorkout.exercises.length}</span>
+              </div>
+              <div style={{height:5,background:"rgba(255,255,255,0.08)",borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:3,background:`linear-gradient(90deg,${todayWorkout.color},${todayWorkout.color}99)`,width:`${(doneExercises.length/todayWorkout.exercises.length)*100}%`,transition:"width 0.5s ease"}}/>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Day Selector ── */}
+        <div style={{display:"flex",gap:6,padding:"0 16px 14px",overflowX:"auto",scrollbarWidth:"none"}}>
+          {dayNames.map((d,i)=>{
+            const w = DAILY_WORKOUTS[i];
+            const isToday = i === dayIdx;
+            const isSelected = i === selectedDay;
+            return (
+              <div key={i} onClick={()=>setSelectedDay(i)} style={{
+                flexShrink:0, padding:"8px 12px", borderRadius:12, cursor:"pointer",
+                background: isSelected ? `${w.color}22` : "var(--card)",
+                border:`1px solid ${isSelected ? w.color : "var(--border)"}`,
+                transition:"all 0.25s", textAlign:"center", minWidth:52,
+              }}>
+                <div style={{fontSize:10,color: isSelected ? w.color : "var(--text3)",fontWeight:700,letterSpacing:0.5}}>{d.slice(0,3).toUpperCase()}</div>
+                {isToday && <div style={{width:4,height:4,background:w.color,borderRadius:"50%",margin:"3px auto 0",boxShadow:`0 0 6px ${w.color}`}}/>}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Selected Day Header ── */}
+        {selectedDay !== dayIdx && (
+          <div style={{margin:"0 16px 14px",background:"rgba(255,255,255,0.03)",border:"1px solid var(--border)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{fontSize:20}}>📅</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--text)"}}>{viewWorkout.day} — {viewWorkout.focus}</div>
+              <div style={{fontSize:11,color:"var(--text3)"}}>Viewing scheduled workout</div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Exercise Cards ── */}
+        <div style={{padding:"0 16px",display:"flex",flexDirection:"column",gap:12}}>
+          {viewWorkout.exercises.map((ex, idx) => {
+            const isDone = doneExercises.includes(idx) && selectedDay === dayIdx;
+            return (
+              <div key={idx} onClick={()=>{ if(selectedDay===dayIdx) toggleExercise(idx); }}
+                style={{
+                  background: isDone ? `${viewWorkout.color}0f` : "var(--card)",
+                  border:`1px solid ${isDone ? viewWorkout.color : "var(--border)"}`,
+                  borderRadius:18, padding:"14px 16px",
+                  display:"flex", alignItems:"center", gap:14,
+                  cursor: selectedDay===dayIdx ? "pointer" : "default",
+                  transition:"all 0.3s",
+                  boxShadow: isDone ? `0 0 20px ${viewWorkout.color}22` : "none",
+                  animation:`slideUp 0.3s ease ${idx*0.06}s both`,
+                }}
+              >
+                {/* Animated SVG */}
+                <div style={{
+                  width:80, height:80, flexShrink:0,
+                  background: isDone ? `${viewWorkout.color}15` : "var(--bg2)",
+                  borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center",
+                  border:`1px solid ${isDone ? viewWorkout.color+"44" : "var(--border)"}`,
+                  transition:"all 0.3s",
+                }}>
+                  <ExerciseAnim type={ex.anim} color={isDone ? viewWorkout.color : viewWorkout.color+"99"}/>
+                </div>
+
+                {/* Info */}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{
+                    fontFamily:"Rajdhani",fontSize:17,fontWeight:700,
+                    color: isDone ? viewWorkout.color : "var(--text)",
+                    marginBottom:3, transition:"color 0.3s",
+                  }}>{ex.name}</div>
+                  <div style={{fontSize:12,color:"var(--text2)",marginBottom:6}}>{ex.muscle}</div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    <span style={{fontSize:11,fontWeight:600,color:viewWorkout.color,background:`${viewWorkout.color}15`,borderRadius:6,padding:"2px 8px"}}>{ex.sets}</span>
+                    <span style={{fontSize:11,fontWeight:600,color:"var(--text2)",background:"var(--bg3)",borderRadius:6,padding:"2px 8px"}}>{ex.reps}</span>
+                  </div>
+                </div>
+
+                {/* Done checkmark */}
+                {selectedDay === dayIdx && (
+                  <div style={{
+                    width:28,height:28,borderRadius:"50%",flexShrink:0,
+                    background: isDone ? viewWorkout.color : "var(--bg3)",
+                    border:`2px solid ${isDone ? viewWorkout.color : "var(--border)"}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:13,fontWeight:700,color: isDone ? "#000" : "var(--text3)",
+                    transition:"all 0.3s",
+                    boxShadow: isDone ? `0 0 10px ${viewWorkout.color}66` : "none",
+                  }}>
+                    {isDone ? "✓" : ""}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── All Done Banner ── */}
+        {selectedDay === dayIdx && doneExercises.length === viewWorkout.exercises.length && (
+          <div style={{margin:"16px 16px 0",background:`linear-gradient(135deg,${viewWorkout.color}18,${viewWorkout.color}08)`,border:`1px solid ${viewWorkout.color}44`,borderRadius:20,padding:24,textAlign:"center",animation:"slideUp 0.4s ease"}}>
+            <div style={{fontSize:52,marginBottom:10}}>🏆</div>
+            <div style={{fontFamily:"Rajdhani",fontSize:24,fontWeight:700,color:viewWorkout.color,marginBottom:6}}>Workout Complete!</div>
+            <div style={{fontSize:13,color:"var(--text2)",marginBottom:14}}>Amazing work! You crushed {viewWorkout.day}'s session 💪</div>
+            <button className="btn-primary" onClick={()=>{ completeTask({id:`day${dayIdx}`,name:viewWorkout.focus,coins:viewWorkout.exercises.length*10}); }}>
+              🪙 Claim +{viewWorkout.exercises.length*10} Coins
+            </button>
+          </div>
+        )}
+
+        {/* ── Streak ── */}
+        <div style={{margin:"14px 16px 0"}}>
+          <div className="streak-display">
+            <span className="streak-fire">🔥</span>
+            <span className="streak-num">{user.streak}</span>
+            <span className="streak-label">day streak — keep it up!</span>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   const MemberProfile = () => {
     const cu = members.find(m=>m.id===user.id)||user;
@@ -1729,8 +2018,9 @@ export default function App() {
             </div>
           </div>
 
-          <button className="btn-primary" style={{
+          <button className="btn-primary" disabled={addingMember} style={{
             marginTop:16,
+            opacity: addingMember ? 0.7 : 1,
             background: newMemberFeePaid
               ? "linear-gradient(135deg,var(--neon),var(--neon2))"
               : "linear-gradient(135deg,#ff6b35,#ff4444)",
@@ -1738,7 +2028,7 @@ export default function App() {
               ? "0 4px 20px rgba(0,255,136,0.35)"
               : "0 4px 20px rgba(255,68,68,0.3)",
           }} onClick={addMember}>
-            {newMemberFeePaid ? "✅ Add Member (Fee Paid)" : "➕ Add Member (Fee Pending)"}
+            {addingMember ? "⏳ Saving..." : newMemberFeePaid ? "✅ Add Member (Fee Paid)" : "➕ Add Member (Fee Pending)"}
           </button>
         </div>
       </div>
@@ -1746,8 +2036,8 @@ export default function App() {
     return null;
   };
 
-  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"analytics",icon:"📊",label:"Analytics"},{id:"aiplan",icon:"🤖",label:"AI Plans"},{id:"settings",icon:"⚙️",label:"Settings"}];
-  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"aiplan",icon:"🤖",label:"AI Plan"},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"analytics",icon:"📊",label:"Analytics"},{id:"aiplan",icon:"🥗",label:"Diet Plan"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"aiplan",icon:"🥗",label:"Diet Plan"},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
   const tabs = role==="owner"?ownerTabs:memberTabs;
 
   const renderContent = () => {
@@ -1767,7 +2057,7 @@ export default function App() {
     return null;
   };
 
-  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",aiplan:"AI Planner",settings:"Settings",workout:"Workouts",profile:"Profile"};
+  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",aiplan:"Diet Plan",settings:"Settings",workout:"Workouts",profile:"Profile"};
 
   return (
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -1775,7 +2065,17 @@ export default function App() {
       <div className="app-shell">
         <div className="app-header">
           <div className="header-logo">
-            <div className="header-logo-icon">🏋️</div>
+            {/* Back button — shows on all screens except dashboard */}
+            {activeTab !== "dashboard" ? (
+              <div
+                className="back-btn"
+                onClick={()=>setActiveTab("dashboard")}
+              >
+                ‹
+              </div>
+            ) : (
+              <div className="header-logo-icon">🏋️</div>
+            )}
             <div className="header-title">{pageTitles[activeTab]||"CROSSFIT"}</div>
           </div>
           <div className="header-actions">
