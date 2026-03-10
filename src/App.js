@@ -16,7 +16,6 @@ const db = getFirestore(firebaseApp);
 
 // ─── Static Config (never changes) ───────────────────────────────────────────
 const OWNER = { username: "admin", password: "admin123", name: "Crossfit Admin", upiId: "crossfit@upi" };
-// ⬆️ Change "crossfit@upi" to your real UPI ID (e.g. "yourname@okaxis" or "9876543210@ybl")
 
 const MONTHLY_REVENUE = [
   { month: "Sep", revenue: 28000 }, { month: "Oct", revenue: 35000 },
@@ -24,85 +23,249 @@ const MONTHLY_REVENUE = [
   { month: "Jan", revenue: 51000 }, { month: "Feb", revenue: 47000 },
 ];
 
-// ─── Daily Workout Schedule ───────────────────────────────────────────────────
-const DAILY_WORKOUTS = {
-  0: { // Sunday
-    day: "Sunday", focus: "Rest & Recovery", color: "#8b5cf6", bg: "rgba(139,92,246,0.08)",
-    exercises: [
-      { name: "Foam Rolling", sets: "10 min", reps: "Full body", muscle: "Recovery", anim: "foam" },
-      { name: "Light Stretching", sets: "3 sets", reps: "30 sec each", muscle: "Flexibility", anim: "stretch" },
-      { name: "Deep Breathing", sets: "5 min", reps: "Box breathing", muscle: "Mind", anim: "breath" },
-      { name: "Hip Flexor Stretch", sets: "3 sets", reps: "45 sec", muscle: "Hips", anim: "hip" },
-      { name: "Cat-Cow Stretch", sets: "3 sets", reps: "10 reps", muscle: "Spine", anim: "camel" },
-      { name: "Child's Pose", sets: "3 sets", reps: "60 sec", muscle: "Back", anim: "child" },
-    ]
+const WORKOUT_PLANS = {
+  beginner: {
+    label:"Beginner", icon:"🌱", color:"#00ff88",
+    desc:"Simple movements, light weights, form focus",
+    schedule:{
+      0:{day:"Sunday",focus:"Rest & Recovery 😌",color:"#8b5cf6",exercises:[
+        {name:"Light Walk",sets:"1 set",reps:"20 min",muscle:"Cardio"},
+        {name:"Foam Rolling",sets:"10 min",reps:"Full body",muscle:"Recovery"},
+        {name:"Child's Pose",sets:"3 sets",reps:"60 sec",muscle:"Back"},
+        {name:"Cat-Cow Stretch",sets:"3 sets",reps:"10 reps",muscle:"Spine"},
+        {name:"Hip Flexor Stretch",sets:"3 sets",reps:"45 sec",muscle:"Hips"},
+        {name:"Deep Breathing",sets:"5 min",reps:"Box breathing",muscle:"Mind"},
+        {name:"Light Stretching",sets:"3 sets",reps:"30 sec each",muscle:"Flexibility"},
+        {name:"Neck Rolls",sets:"2 sets",reps:"10 each side",muscle:"Neck"},
+      ]},
+      1:{day:"Monday",focus:"Chest Day 💪",color:"#00ff88",exercises:[
+        {name:"Wall Push-Ups",sets:"3 sets",reps:"15 reps",muscle:"Chest"},
+        {name:"Knee Push-Ups",sets:"3 sets",reps:"12 reps",muscle:"Chest & Arms"},
+        {name:"DB Chest Press",sets:"3 sets",reps:"12 reps",muscle:"Chest"},
+        {name:"Chest Flyes (Light)",sets:"3 sets",reps:"12 reps",muscle:"Chest"},
+        {name:"Incline Push-Ups",sets:"3 sets",reps:"10 reps",muscle:"Upper Chest"},
+        {name:"Dips (Assisted)",sets:"2 sets",reps:"8 reps",muscle:"Lower Chest"},
+        {name:"Chest Stretch",sets:"3 sets",reps:"30 sec",muscle:"Chest Flexibility"},
+        {name:"Deep Breathing",sets:"1 set",reps:"5 min",muscle:"Cool Down"},
+      ]},
+      2:{day:"Tuesday",focus:"Back Day 🏋️",color:"#00d4ff",exercises:[
+        {name:"Band Pull-Aparts",sets:"3 sets",reps:"15 reps",muscle:"Upper Back"},
+        {name:"Assisted Pull-Ups",sets:"3 sets",reps:"6 reps",muscle:"Lats"},
+        {name:"Dumbbell Row",sets:"3 sets",reps:"10 reps",muscle:"Mid Back"},
+        {name:"Lat Pulldown (Light)",sets:"3 sets",reps:"12 reps",muscle:"Lats"},
+        {name:"Superman Hold",sets:"3 sets",reps:"10 reps",muscle:"Lower Back"},
+        {name:"Seated Cable Row",sets:"3 sets",reps:"12 reps",muscle:"Back"},
+        {name:"Cat-Cow Stretch",sets:"2 sets",reps:"10 reps",muscle:"Spine"},
+        {name:"Child's Pose",sets:"2 sets",reps:"60 sec",muscle:"Back Stretch"},
+      ]},
+      3:{day:"Wednesday",focus:"Arms Day 💥",color:"#ff6b35",exercises:[
+        {name:"Dumbbell Curl",sets:"3 sets",reps:"12 reps",muscle:"Biceps"},
+        {name:"Hammer Curl",sets:"3 sets",reps:"12 reps",muscle:"Brachialis"},
+        {name:"Tricep Pushdown",sets:"3 sets",reps:"12 reps",muscle:"Triceps"},
+        {name:"Overhead Tricep Ext",sets:"3 sets",reps:"12 reps",muscle:"Triceps"},
+        {name:"Concentration Curl",sets:"2 sets",reps:"10 reps",muscle:"Biceps Peak"},
+        {name:"Tricep Dips (Bench)",sets:"2 sets",reps:"10 reps",muscle:"Triceps"},
+        {name:"Wrist Curls",sets:"2 sets",reps:"15 reps",muscle:"Forearms"},
+        {name:"Arm Stretch",sets:"2 sets",reps:"30 sec",muscle:"Flexibility"},
+      ]},
+      4:{day:"Thursday",focus:"Shoulders Day 🎯",color:"#ffd700",exercises:[
+        {name:"DB Shoulder Press",sets:"3 sets",reps:"12 reps",muscle:"All Delts"},
+        {name:"Lateral Raises",sets:"3 sets",reps:"15 reps",muscle:"Side Delts"},
+        {name:"Front Raises",sets:"3 sets",reps:"12 reps",muscle:"Front Delts"},
+        {name:"Rear Delt Flyes",sets:"3 sets",reps:"15 reps",muscle:"Rear Delts"},
+        {name:"Band Pull-Aparts",sets:"3 sets",reps:"15 reps",muscle:"Rear Delts"},
+        {name:"Shrugs (Light)",sets:"3 sets",reps:"15 reps",muscle:"Traps"},
+        {name:"Neck Stretch",sets:"2 sets",reps:"30 sec",muscle:"Neck & Traps"},
+        {name:"Shoulder Circles",sets:"2 sets",reps:"20 reps",muscle:"Mobility"},
+      ]},
+      5:{day:"Friday",focus:"Legs Day 🦵",color:"#ff4444",exercises:[
+        {name:"Bodyweight Squat",sets:"3 sets",reps:"15 reps",muscle:"Quads"},
+        {name:"Walking Lunges",sets:"3 sets",reps:"10 each leg",muscle:"Legs"},
+        {name:"Leg Press (Light)",sets:"3 sets",reps:"12 reps",muscle:"Quads"},
+        {name:"Lying Leg Curl",sets:"3 sets",reps:"12 reps",muscle:"Hamstrings"},
+        {name:"Glute Bridges",sets:"3 sets",reps:"15 reps",muscle:"Glutes"},
+        {name:"Step-Ups",sets:"3 sets",reps:"10 each leg",muscle:"Legs"},
+        {name:"Calf Raises",sets:"3 sets",reps:"20 reps",muscle:"Calves"},
+        {name:"Hip Flexor Stretch",sets:"2 sets",reps:"45 sec",muscle:"Cool Down"},
+      ]},
+      6:{day:"Saturday",focus:"Core & Cardio ⚡",color:"#8b5cf6",exercises:[
+        {name:"Plank Hold",sets:"3 sets",reps:"30 sec",muscle:"Core"},
+        {name:"Crunches",sets:"3 sets",reps:"15 reps",muscle:"Abs"},
+        {name:"Leg Raises",sets:"3 sets",reps:"10 reps",muscle:"Lower Abs"},
+        {name:"Russian Twists",sets:"3 sets",reps:"15 reps",muscle:"Obliques"},
+        {name:"Mountain Climbers",sets:"3 sets",reps:"20 sec",muscle:"Core & Cardio"},
+        {name:"Jumping Jacks",sets:"3 sets",reps:"30 reps",muscle:"Full Body"},
+        {name:"Brisk Walk",sets:"1 set",reps:"15 min",muscle:"Cardio"},
+        {name:"Deep Breathing",sets:"1 set",reps:"5 min",muscle:"Cool Down"},
+      ]},
+    }
   },
-  1: { // Monday
-    day: "Monday", focus: "Chest Day 💪", color: "#00ff88", bg: "rgba(0,255,136,0.08)",
-    exercises: [
-      { name: "Bench Press", sets: "4 sets", reps: "8-10 reps", muscle: "Chest", anim: "bench" },
-      { name: "Incline DB Press", sets: "3 sets", reps: "10-12 reps", muscle: "Upper Chest", anim: "incline" },
-      { name: "Cable Flyes", sets: "3 sets", reps: "12-15 reps", muscle: "Chest", anim: "fly" },
-      { name: "Push-Ups", sets: "3 sets", reps: "15-20 reps", muscle: "Chest & Triceps", anim: "pushup" },
-      { name: "Dips", sets: "3 sets", reps: "10-12 reps", muscle: "Lower Chest", anim: "dip" },
-      { name: "Chest Press Machine", sets: "3 sets", reps: "12 reps", muscle: "Chest", anim: "machine" },
-    ]
+  intermediate:{
+    label:"Intermediate", icon:"🔥", color:"#ff6b35",
+    desc:"Progressive overload, compound lifts, moderate intensity",
+    schedule:{
+      0:{day:"Sunday",focus:"Active Recovery 🧘",color:"#8b5cf6",exercises:[
+        {name:"Foam Rolling",sets:"15 min",reps:"Full body",muscle:"Recovery"},
+        {name:"Light Stretching",sets:"3 sets",reps:"30 sec each",muscle:"Flexibility"},
+        {name:"Yoga Flow",sets:"20 min",reps:"Full body",muscle:"Mind & Body"},
+        {name:"Hip Flexor Stretch",sets:"3 sets",reps:"45 sec",muscle:"Hips"},
+        {name:"Cat-Cow Stretch",sets:"3 sets",reps:"10 reps",muscle:"Spine"},
+        {name:"Deep Breathing",sets:"5 min",reps:"Box breathing",muscle:"Mind"},
+        {name:"Light Walk",sets:"1 set",reps:"30 min",muscle:"Cardio"},
+        {name:"Meditation",sets:"1 set",reps:"10 min",muscle:"Mental Recovery"},
+      ]},
+      1:{day:"Monday",focus:"Chest Day 💪",color:"#00ff88",exercises:[
+        {name:"Bench Press",sets:"4 sets",reps:"8-10 reps",muscle:"Chest"},
+        {name:"Incline DB Press",sets:"3 sets",reps:"10-12 reps",muscle:"Upper Chest"},
+        {name:"Cable Flyes",sets:"3 sets",reps:"12-15 reps",muscle:"Chest"},
+        {name:"Push-Ups",sets:"3 sets",reps:"15-20 reps",muscle:"Chest & Triceps"},
+        {name:"Dips",sets:"3 sets",reps:"10-12 reps",muscle:"Lower Chest"},
+        {name:"Chest Press Machine",sets:"3 sets",reps:"12 reps",muscle:"Chest"},
+        {name:"Pec Deck",sets:"3 sets",reps:"15 reps",muscle:"Inner Chest"},
+        {name:"Chest Stretch",sets:"2 sets",reps:"30 sec",muscle:"Cool Down"},
+      ]},
+      2:{day:"Tuesday",focus:"Back Day 🏋️",color:"#00d4ff",exercises:[
+        {name:"Deadlift",sets:"4 sets",reps:"6-8 reps",muscle:"Full Back"},
+        {name:"Pull-Ups",sets:"4 sets",reps:"8-10 reps",muscle:"Lats"},
+        {name:"Barbell Row",sets:"3 sets",reps:"8-10 reps",muscle:"Mid Back"},
+        {name:"Lat Pulldown",sets:"3 sets",reps:"12 reps",muscle:"Lats"},
+        {name:"Seated Cable Row",sets:"3 sets",reps:"12 reps",muscle:"Back"},
+        {name:"Face Pulls",sets:"3 sets",reps:"15 reps",muscle:"Rear Delts"},
+        {name:"T-Bar Row",sets:"3 sets",reps:"10 reps",muscle:"Thickness"},
+        {name:"Back Stretch",sets:"2 sets",reps:"30 sec",muscle:"Cool Down"},
+      ]},
+      3:{day:"Wednesday",focus:"Arms Day 💥",color:"#ff6b35",exercises:[
+        {name:"Barbell Curl",sets:"4 sets",reps:"10-12 reps",muscle:"Biceps"},
+        {name:"Hammer Curl",sets:"3 sets",reps:"12 reps",muscle:"Brachialis"},
+        {name:"Incline DB Curl",sets:"3 sets",reps:"12 reps",muscle:"Biceps Stretch"},
+        {name:"Tricep Dips",sets:"4 sets",reps:"10-12 reps",muscle:"Triceps"},
+        {name:"Skull Crushers",sets:"3 sets",reps:"10-12 reps",muscle:"Triceps"},
+        {name:"Tricep Pushdown",sets:"3 sets",reps:"15 reps",muscle:"Triceps"},
+        {name:"Concentration Curl",sets:"3 sets",reps:"12 reps",muscle:"Biceps Peak"},
+        {name:"Arm Stretch",sets:"2 sets",reps:"30 sec",muscle:"Cool Down"},
+      ]},
+      4:{day:"Thursday",focus:"Shoulders Day 🎯",color:"#ffd700",exercises:[
+        {name:"Overhead Press",sets:"4 sets",reps:"8-10 reps",muscle:"All Delts"},
+        {name:"Arnold Press",sets:"3 sets",reps:"10-12 reps",muscle:"Full Shoulder"},
+        {name:"Lateral Raises",sets:"4 sets",reps:"12-15 reps",muscle:"Side Delts"},
+        {name:"Front Raises",sets:"3 sets",reps:"12 reps",muscle:"Front Delts"},
+        {name:"Rear Delt Flyes",sets:"3 sets",reps:"15 reps",muscle:"Rear Delts"},
+        {name:"Shrugs",sets:"4 sets",reps:"15 reps",muscle:"Traps"},
+        {name:"Upright Row",sets:"3 sets",reps:"12 reps",muscle:"Side Delts & Traps"},
+        {name:"Shoulder Stretch",sets:"2 sets",reps:"30 sec",muscle:"Cool Down"},
+      ]},
+      5:{day:"Friday",focus:"Legs Day 🦵",color:"#ff4444",exercises:[
+        {name:"Barbell Squat",sets:"4 sets",reps:"8-10 reps",muscle:"Quads & Glutes"},
+        {name:"Romanian Deadlift",sets:"3 sets",reps:"10-12 reps",muscle:"Hamstrings"},
+        {name:"Leg Press",sets:"4 sets",reps:"12 reps",muscle:"Quads"},
+        {name:"Walking Lunges",sets:"3 sets",reps:"12 each leg",muscle:"Legs"},
+        {name:"Leg Curl",sets:"3 sets",reps:"12-15 reps",muscle:"Hamstrings"},
+        {name:"Leg Extension",sets:"3 sets",reps:"15 reps",muscle:"Quads"},
+        {name:"Calf Raises",sets:"5 sets",reps:"20 reps",muscle:"Calves"},
+        {name:"Hip Flexor Stretch",sets:"2 sets",reps:"45 sec",muscle:"Cool Down"},
+      ]},
+      6:{day:"Saturday",focus:"Core & Cardio ⚡",color:"#8b5cf6",exercises:[
+        {name:"Plank",sets:"4 sets",reps:"60 sec hold",muscle:"Core"},
+        {name:"Crunches",sets:"4 sets",reps:"20 reps",muscle:"Abs"},
+        {name:"Russian Twists",sets:"3 sets",reps:"20 reps",muscle:"Obliques"},
+        {name:"Leg Raises",sets:"3 sets",reps:"15 reps",muscle:"Lower Abs"},
+        {name:"Burpees",sets:"4 sets",reps:"10 reps",muscle:"Full Body"},
+        {name:"Mountain Climbers",sets:"3 sets",reps:"30 sec",muscle:"Core & Cardio"},
+        {name:"Jump Rope",sets:"3 sets",reps:"2 min",muscle:"Cardio"},
+        {name:"Cool Down Stretch",sets:"1 set",reps:"10 min",muscle:"Full Body"},
+      ]},
+    }
   },
-  2: { // Tuesday
-    day: "Tuesday", focus: "Back Day 🏋️", color: "#00d4ff", bg: "rgba(0,212,255,0.08)",
-    exercises: [
-      { name: "Deadlift", sets: "4 sets", reps: "6-8 reps", muscle: "Full Back", anim: "deadlift" },
-      { name: "Pull-Ups", sets: "4 sets", reps: "8-10 reps", muscle: "Lats", anim: "pullup" },
-      { name: "Barbell Row", sets: "3 sets", reps: "8-10 reps", muscle: "Mid Back", anim: "row" },
-      { name: "Lat Pulldown", sets: "3 sets", reps: "12 reps", muscle: "Lats", anim: "pulldown" },
-      { name: "Seated Cable Row", sets: "3 sets", reps: "12 reps", muscle: "Back", anim: "cablerow" },
-      { name: "Face Pulls", sets: "3 sets", reps: "15 reps", muscle: "Rear Delts", anim: "facepull" },
-    ]
-  },
-  3: { // Wednesday
-    day: "Wednesday", focus: "Biceps & Triceps 💥", color: "#ff6b35", bg: "rgba(255,107,53,0.08)",
-    exercises: [
-      { name: "Barbell Curl", sets: "4 sets", reps: "10-12 reps", muscle: "Biceps", anim: "curl" },
-      { name: "Hammer Curl", sets: "3 sets", reps: "12 reps", muscle: "Brachialis", anim: "hammer" },
-      { name: "Tricep Dips", sets: "4 sets", reps: "10-12 reps", muscle: "Triceps", anim: "tricdip" },
-      { name: "Skull Crushers", sets: "3 sets", reps: "10-12 reps", muscle: "Triceps", anim: "skull" },
-      { name: "Concentration Curl", sets: "3 sets", reps: "12 reps", muscle: "Biceps Peak", anim: "conc" },
-      { name: "Tricep Pushdown", sets: "3 sets", reps: "15 reps", muscle: "Triceps", anim: "pushdown" },
-    ]
-  },
-  4: { // Thursday
-    day: "Thursday", focus: "Shoulder Day 🎯", color: "#ffd700", bg: "rgba(255,215,0,0.08)",
-    exercises: [
-      { name: "Overhead Press", sets: "4 sets", reps: "8-10 reps", muscle: "All Delts", anim: "ohp" },
-      { name: "Lateral Raises", sets: "4 sets", reps: "12-15 reps", muscle: "Side Delts", anim: "lateral" },
-      { name: "Front Raises", sets: "3 sets", reps: "12 reps", muscle: "Front Delts", anim: "front" },
-      { name: "Rear Delt Flyes", sets: "3 sets", reps: "15 reps", muscle: "Rear Delts", anim: "rear" },
-      { name: "Arnold Press", sets: "3 sets", reps: "10-12 reps", muscle: "Full Shoulder", anim: "arnold" },
-      { name: "Shrugs", sets: "4 sets", reps: "15 reps", muscle: "Traps", anim: "shrug" },
-    ]
-  },
-  5: { // Friday
-    day: "Friday", focus: "Legs Day 🦵", color: "#ff4444", bg: "rgba(255,68,68,0.08)",
-    exercises: [
-      { name: "Barbell Squat", sets: "4 sets", reps: "8-10 reps", muscle: "Quads & Glutes", anim: "squat" },
-      { name: "Romanian Deadlift", sets: "3 sets", reps: "10-12 reps", muscle: "Hamstrings", anim: "rdl" },
-      { name: "Leg Press", sets: "4 sets", reps: "12 reps", muscle: "Quads", anim: "legpress" },
-      { name: "Lunges", sets: "3 sets", reps: "12 each leg", muscle: "Legs", anim: "lunge" },
-      { name: "Leg Curl", sets: "3 sets", reps: "12-15 reps", muscle: "Hamstrings", anim: "legcurl" },
-      { name: "Calf Raises", sets: "5 sets", reps: "20 reps", muscle: "Calves", anim: "calf" },
-    ]
-  },
-  6: { // Saturday
-    day: "Saturday", focus: "Core & Cardio ⚡", color: "#00ff88", bg: "rgba(0,255,136,0.08)",
-    exercises: [
-      { name: "Plank", sets: "4 sets", reps: "60 sec hold", muscle: "Core", anim: "plank" },
-      { name: "Crunches", sets: "4 sets", reps: "20 reps", muscle: "Abs", anim: "crunch" },
-      { name: "Russian Twists", sets: "3 sets", reps: "20 reps", muscle: "Obliques", anim: "twist" },
-      { name: "Leg Raises", sets: "3 sets", reps: "15 reps", muscle: "Lower Abs", anim: "legraise" },
-      { name: "Burpees", sets: "4 sets", reps: "10 reps", muscle: "Full Body", anim: "burpee" },
-      { name: "Mountain Climbers", sets: "3 sets", reps: "30 sec", muscle: "Core & Cardio", anim: "mountain" },
-    ]
-  },
+  professional:{
+    label:"Professional", icon:"⚡", color:"#ffd700",
+    desc:"Dual muscle groups, high volume, max intensity",
+    schedule:{
+      0:{day:"Sunday",focus:"Full Recovery 🧘",color:"#8b5cf6",exercises:[
+        {name:"Foam Rolling",sets:"20 min",reps:"Full body",muscle:"Myofascial Release"},
+        {name:"Light Yoga",sets:"30 min",reps:"Full flow",muscle:"Flexibility"},
+        {name:"Cold Shower",sets:"1 set",reps:"10 min",muscle:"Recovery"},
+        {name:"Meditation",sets:"1 set",reps:"15 min",muscle:"CNS Recovery"},
+        {name:"Hip Mobility Drills",sets:"3 sets",reps:"10 each",muscle:"Hips"},
+        {name:"Band Activation",sets:"3 sets",reps:"15 reps",muscle:"Glutes & Shoulders"},
+        {name:"Thoracic Rotation",sets:"3 sets",reps:"10 each",muscle:"Spine Mobility"},
+        {name:"Deep Tissue Stretch",sets:"1 set",reps:"15 min",muscle:"Full Body"},
+        {name:"Contrast Therapy",sets:"3 rounds",reps:"Hot/Cold cycle",muscle:"Circulation"},
+        {name:"Nutrition Review",sets:"—",reps:"Review macros",muscle:"Recovery"},
+      ]},
+      1:{day:"Monday",focus:"Chest + Triceps 💪🔥",color:"#00ff88",exercises:[
+        {name:"Flat Bench Press",sets:"5 sets",reps:"5-6 reps (heavy)",muscle:"Chest"},
+        {name:"Incline Barbell Press",sets:"4 sets",reps:"8-10 reps",muscle:"Upper Chest"},
+        {name:"Decline DB Press",sets:"3 sets",reps:"10-12 reps",muscle:"Lower Chest"},
+        {name:"Cable Crossover Flyes",sets:"4 sets",reps:"12-15 reps",muscle:"Chest Isolation"},
+        {name:"Weighted Dips",sets:"4 sets",reps:"8-10 reps",muscle:"Lower Chest + Triceps"},
+        {name:"Close-Grip Bench Press",sets:"4 sets",reps:"8-10 reps",muscle:"Triceps"},
+        {name:"Skull Crushers",sets:"3 sets",reps:"10-12 reps",muscle:"Triceps Long Head"},
+        {name:"Tricep Pushdown (Rope)",sets:"3 sets",reps:"12-15 reps",muscle:"Triceps Lateral"},
+        {name:"Overhead Tricep Ext",sets:"3 sets",reps:"12 reps",muscle:"Triceps Long Head"},
+        {name:"Cable Tricep Kickback",sets:"3 sets",reps:"15 reps",muscle:"Triceps Finish"},
+      ]},
+      2:{day:"Tuesday",focus:"Back + Biceps 🏋️💥",color:"#00d4ff",exercises:[
+        {name:"Deadlift",sets:"5 sets",reps:"3-5 reps (heavy)",muscle:"Full Posterior Chain"},
+        {name:"Weighted Pull-Ups",sets:"4 sets",reps:"6-8 reps",muscle:"Lats & Biceps"},
+        {name:"Barbell Row (Pendlay)",sets:"4 sets",reps:"6-8 reps",muscle:"Mid Back Thickness"},
+        {name:"T-Bar Row",sets:"3 sets",reps:"8-10 reps",muscle:"Back Density"},
+        {name:"Single-Arm DB Row",sets:"3 sets",reps:"10-12 each",muscle:"Lats"},
+        {name:"Face Pulls (Heavy)",sets:"3 sets",reps:"15 reps",muscle:"Rear Delts & Rotators"},
+        {name:"Barbell Curl",sets:"4 sets",reps:"8-10 reps",muscle:"Biceps"},
+        {name:"Incline DB Curl",sets:"3 sets",reps:"10-12 reps",muscle:"Biceps Stretch"},
+        {name:"Hammer Curl",sets:"3 sets",reps:"12 reps",muscle:"Brachialis"},
+        {name:"Reverse Curl",sets:"3 sets",reps:"12 reps",muscle:"Brachioradialis"},
+      ]},
+      3:{day:"Wednesday",focus:"Shoulders + Traps 🎯💪",color:"#ffd700",exercises:[
+        {name:"Push Press",sets:"5 sets",reps:"5-6 reps (heavy)",muscle:"All Delts + Traps"},
+        {name:"DB Arnold Press",sets:"4 sets",reps:"8-10 reps",muscle:"Full Shoulder"},
+        {name:"Lateral Raises (Drop Set)",sets:"4 sets",reps:"12→10→8",muscle:"Side Delts"},
+        {name:"Cable Front Raises",sets:"3 sets",reps:"12-15 reps",muscle:"Front Delts"},
+        {name:"Rear Delt Flyes (Machine)",sets:"4 sets",reps:"15 reps",muscle:"Rear Delts"},
+        {name:"Upright Row",sets:"3 sets",reps:"10-12 reps",muscle:"Side Delts & Traps"},
+        {name:"Barbell Shrugs",sets:"5 sets",reps:"12-15 reps",muscle:"Traps"},
+        {name:"DB Shrugs",sets:"3 sets",reps:"15 reps",muscle:"Traps"},
+        {name:"Face Pulls",sets:"3 sets",reps:"20 reps",muscle:"Rear Delts & Health"},
+        {name:"Neck Training",sets:"3 sets",reps:"15 each dir",muscle:"Neck"},
+      ]},
+      4:{day:"Thursday",focus:"Legs (Quad Focus) 🦵🔥",color:"#ff4444",exercises:[
+        {name:"Barbell Back Squat",sets:"5 sets",reps:"5-6 reps (heavy)",muscle:"Full Legs"},
+        {name:"Front Squat",sets:"4 sets",reps:"6-8 reps",muscle:"Quads"},
+        {name:"Leg Press (High Volume)",sets:"4 sets",reps:"15-20 reps",muscle:"Quads"},
+        {name:"Hack Squat",sets:"3 sets",reps:"10-12 reps",muscle:"Quads"},
+        {name:"Bulgarian Split Squat",sets:"3 sets",reps:"10 each leg",muscle:"Quads & Glutes"},
+        {name:"Walking Lunges",sets:"3 sets",reps:"15 each leg",muscle:"Legs"},
+        {name:"Leg Extension",sets:"4 sets",reps:"15-20 reps",muscle:"Quad Isolation"},
+        {name:"Romanian Deadlift",sets:"3 sets",reps:"10-12 reps",muscle:"Hamstrings"},
+        {name:"Calf Raises (Heavy)",sets:"6 sets",reps:"15-20 reps",muscle:"Calves"},
+        {name:"Tibialis Raise",sets:"3 sets",reps:"20 reps",muscle:"Shin"},
+      ]},
+      5:{day:"Friday",focus:"Legs (Ham) + Core 🦵⚡",color:"#ff6b35",exercises:[
+        {name:"Romanian Deadlift",sets:"5 sets",reps:"6-8 reps (heavy)",muscle:"Hamstrings"},
+        {name:"Lying Leg Curl",sets:"4 sets",reps:"10-12 reps",muscle:"Hamstrings"},
+        {name:"Seated Leg Curl",sets:"3 sets",reps:"12-15 reps",muscle:"Hamstrings"},
+        {name:"Good Mornings",sets:"3 sets",reps:"10 reps",muscle:"Hamstrings & Lower Back"},
+        {name:"Hip Thrust",sets:"4 sets",reps:"10-12 reps",muscle:"Glutes"},
+        {name:"Weighted Plank",sets:"4 sets",reps:"60-90 sec",muscle:"Core"},
+        {name:"Ab Wheel Rollout",sets:"4 sets",reps:"10-12 reps",muscle:"Full Core"},
+        {name:"Hanging Leg Raises",sets:"4 sets",reps:"15 reps",muscle:"Lower Abs"},
+        {name:"Cable Woodchops",sets:"3 sets",reps:"12 each side",muscle:"Obliques"},
+        {name:"Seated Calf Raise",sets:"4 sets",reps:"20 reps",muscle:"Soleus"},
+      ]},
+      6:{day:"Saturday",focus:"Full Body Power 💥",color:"#8b5cf6",exercises:[
+        {name:"Power Cleans",sets:"5 sets",reps:"3-5 reps",muscle:"Full Body Power"},
+        {name:"Push Press",sets:"4 sets",reps:"5-6 reps",muscle:"Shoulders & Triceps"},
+        {name:"Pull-Ups (Weighted)",sets:"4 sets",reps:"6-8 reps",muscle:"Back & Biceps"},
+        {name:"Barbell Complex",sets:"3 rounds",reps:"6 each movement",muscle:"Full Body"},
+        {name:"Dumbbell Thrusters",sets:"4 sets",reps:"10 reps",muscle:"Full Body"},
+        {name:"Burpees",sets:"5 sets",reps:"10 reps",muscle:"Conditioning"},
+        {name:"Battle Ropes",sets:"5 sets",reps:"30 sec",muscle:"Upper Body + Cardio"},
+        {name:"Box Jumps",sets:"4 sets",reps:"8 reps",muscle:"Explosive Power"},
+        {name:"Sprint Intervals",sets:"8 rounds",reps:"20 sec on/40 sec off",muscle:"Cardio"},
+        {name:"Cool Down Stretch",sets:"1 set",reps:"15 min",muscle:"Full Body"},
+      ]},
+    }
+  }
 };
 
 // ─── Seed Members (only used if Firestore is empty) ───────────────────────────
@@ -336,13 +499,6 @@ const css = `
     justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.3s;
   }
   .icon-btn:hover { border-color: var(--neon); }
-  .back-btn {
-    width: 36px; height: 36px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 20px; font-weight: 700; color: var(--neon);
-    transition: all 0.3s; margin-right: 8px; flex-shrink: 0;
-  }
-  .back-btn:hover { border-color: var(--neon); background: rgba(0,255,136,0.1); transform: translateX(-2px); }
 
   .bottom-nav {
     position: sticky; bottom: 0; background: var(--bg2);
@@ -988,184 +1144,7 @@ function AIPlanSection({ user, members, showToast }) {
   );
 }
 
-// ─── Exercise Animation Component ────────────────────────────────────────────
-function ExerciseAnim({ type, color }) {
-  const c = color || "#00ff88";
-  const anims = {
-    // Chest
-    bench: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="45" width="60" height="8" rx="4" fill={c} opacity="0.3"/><circle cx="40" cy="30" r="10" fill={c} opacity="0.7"/><line x1="40" y1="40" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="20" y2="38" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="60" y2="38" stroke={c} strokeWidth="3"/><rect x="8" y="35" width="8" height="4" rx="2" fill={c}/><rect x="64" y="35" width="8" height="4" rx="2" fill={c}/><animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
-    pushup: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="20" cy="28" r="8" fill={c} opacity="0.8"/><line x1="28" y1="32" x2="55" y2="48" stroke={c} strokeWidth="3"/><line x1="55" y1="48" x2="68" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="55" y1="48" x2="55" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,6;0,0" dur="1.2s" repeatCount="indefinite"/></svg>,
-    incline: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="50" width="70" height="6" rx="3" fill={c} opacity="0.2"/><rect x="5" y="40" width="50" height="12" rx="4" fill={c} opacity="0.25" transform="rotate(-15 30 46)"/><circle cx="30" cy="28" r="9" fill={c} opacity="0.8"/><line x1="30" y1="37" x2="38" y2="50" stroke={c} strokeWidth="3"/><line x1="38" y1="45" x2="15" y2="38" stroke={c} strokeWidth="2.5"/><line x1="38" y1="45" x2="58" y2="38" stroke={c} strokeWidth="2.5"/><rect x="8" y="34" width="8" height="5" rx="2" fill={c}/><rect x="56" y="34" width="8" height="5" rx="2" fill={c}/><animateTransform attributeName="transform" type="translate" values="0,0;0,-5;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
-    fly: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="50" stroke={c} strokeWidth="3"/><path d="M40,40 Q20,30 12,38" stroke={c} strokeWidth="3" fill="none"/><path d="M40,40 Q60,30 68,38" stroke={c} strokeWidth="3" fill="none"/><circle cx="12" cy="38" r="5" fill={c} opacity="0.5"/><circle cx="68" cy="38" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="2s" repeatCount="indefinite"/></svg>,
-    dip: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="20" width="6" height="45" rx="3" fill={c} opacity="0.4"/><rect x="66" y="20" width="6" height="45" rx="3" fill={c} opacity="0.4"/><rect x="8" y="18" width="64" height="6" rx="3" fill={c} opacity="0.3"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="52" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,8;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    machine: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="10" width="70" height="60" rx="8" fill={c} opacity="0.08" stroke={c} strokeWidth="1.5"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="42" stroke={c} strokeWidth="3"/><rect x="18" y="38" width="8" height="8" rx="2" fill={c} opacity="0.5"/><rect x="54" y="38" width="8" height="8" rx="2" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
-    // Back
-    deadlift: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="25" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="55" y2="48" stroke={c} strokeWidth="3"/><rect x="10" y="58" width="60" height="6" rx="3" fill={c} opacity="0.4"/><rect x="8" y="54" width="10" height="10" rx="5" fill={c} opacity="0.6"/><rect x="62" y="54" width="10" height="10" rx="5" fill={c} opacity="0.6"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
-    pullup: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="8" width="70" height="8" rx="4" fill={c} opacity="0.4"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="16" x2="40" y2="26" stroke={c} strokeWidth="3"/><line x1="40" y1="44" x2="40" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="52" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,6;0,0;0,6" dur="1.5s" repeatCount="indefinite"/></svg>,
-    row: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="20" cy="30" r="8" fill={c} opacity="0.8"/><line x1="28" y1="34" x2="40" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="40" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="28" y1="38" x2="65" y2="38" stroke={c} strokeWidth="3"/><rect x="60" y="34" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;-6,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    pulldown: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="5" width="70" height="6" rx="3" fill={c} opacity="0.35"/><line x1="40" y1="11" x2="20" y2="28" stroke={c} strokeWidth="2.5"/><line x1="40" y1="11" x2="60" y2="28" stroke={c} strokeWidth="2.5"/><circle cx="40" cy="38" r="9" fill={c} opacity="0.8"/><line x1="40" y1="47" x2="40" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="28" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="52" y2="64" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,-4;0,4;0,-4" dur="1.5s" repeatCount="indefinite"/></svg>,
-    cablerow: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="35" width="20" height="30" rx="4" fill={c} opacity="0.2" stroke={c} strokeWidth="1"/><circle cx="55" cy="32" r="9" fill={c} opacity="0.8"/><line x1="25" y1="50" x2="48" y2="40" stroke={c} strokeWidth="3"/><line x1="55" y1="41" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="55" y1="50" x2="43" y2="62" stroke={c} strokeWidth="3"/><line x1="55" y1="50" x2="67" y2="62" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;-5,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    facepull: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="60" y="20" width="15" height="40" rx="4" fill={c} opacity="0.2"/><circle cx="28" cy="30" r="9" fill={c} opacity="0.8"/><line x1="37" y1="33" x2="60" y2="38" stroke={c} strokeWidth="3"/><line x1="37" y1="37" x2="37" y2="55" stroke={c} strokeWidth="3"/><line x1="37" y1="46" x2="25" y2="58" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;-6,0;0,0" dur="1.3s" repeatCount="indefinite"/></svg>,
-    // Arms
-    curl: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="45" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="25" y2="38" stroke={c} strokeWidth="3"/><rect x="12" y="34" width="14" height="6" rx="3" fill={c} opacity="0.5"/><line x1="40" y1="45" x2="55" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="28" y2="66" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 25 38;-15 25 38;0 25 38" dur="1.4s" repeatCount="indefinite"/></svg>,
-    hammer: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="28" y2="42" stroke={c} strokeWidth="3"/><rect x="14" y="36" width="15" height="12" rx="4" fill={c} opacity="0.5"/><line x1="40" y1="48" x2="52" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="58" x2="28" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 28 42;-12 28 42;0 28 42" dur="1.5s" repeatCount="indefinite"/></svg>,
-    tricdip: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="55" width="64" height="6" rx="3" fill={c} opacity="0.3"/><circle cx="40" cy="28" r="9" fill={c} opacity="0.8"/><line x1="40" y1="37" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="60" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,8;0,0" dur="1.3s" repeatCount="indefinite"/></svg>,
-    skull: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="48" width="60" height="8" rx="4" fill={c} opacity="0.3"/><circle cx="40" cy="20" r="9" fill={c} opacity="0.8"/><line x1="40" y1="29" x2="40" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="24" y2="42" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="56" y2="42" stroke={c} strokeWidth="3"/><rect x="14" y="38" width="10" height="6" rx="3" fill={c} opacity="0.5"/><rect x="56" y="38" width="10" height="6" rx="3" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    conc: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="35" cy="18" r="9" fill={c} opacity="0.8"/><line x1="35" y1="27" x2="35" y2="45" stroke={c} strokeWidth="3"/><line x1="35" y1="45" x2="20" y2="40" stroke={c} strokeWidth="3"/><rect x="8" y="36" width="13" height="7" rx="3" fill={c} opacity="0.5"/><rect x="8" y="55" width="64" height="6" rx="3" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="rotate" values="0 20 40;-18 20 40;0 20 40" dur="1.4s" repeatCount="indefinite"/></svg>,
-    pushdown: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="30" y="5" width="20" height="8" rx="4" fill={c} opacity="0.4"/><line x1="40" y1="13" x2="40" y2="26" stroke={c} strokeWidth="2.5"/><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="28" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="55" x2="52" y2="48" stroke={c} strokeWidth="3"/><rect x="23" y="62" width="34" height="6" rx="3" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,-4;0,4;0,-4" dur="1.3s" repeatCount="indefinite"/></svg>,
-    // Shoulders
-    ohp: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="38" r="9" fill={c} opacity="0.8"/><line x1="40" y1="47" x2="40" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="28" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="54" x2="52" y2="64" stroke={c} strokeWidth="3"/><line x1="40" y1="34" x2="18" y2="34" stroke={c} strokeWidth="3"/><line x1="40" y1="34" x2="62" y2="34" stroke={c} strokeWidth="3"/><rect x="8" y="30" width="10" height="8" rx="4" fill={c} opacity="0.5"/><rect x="62" y="30" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
-    lateral: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="25" r="9" fill={c} opacity="0.8"/><line x1="40" y1="34" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="22" y2="32" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="58" y2="32" stroke={c} strokeWidth="3"/><circle cx="18" cy="30" r="5" fill={c} opacity="0.4"/><circle cx="62" cy="30" r="5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    front: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="28" r="9" fill={c} opacity="0.8"/><line x1="40" y1="37" x2="40" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="47" x2="28" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="47" x2="52" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="43" x2="22" y2="43" stroke={c} strokeWidth="3"/><circle cx="18" cy="43" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="rotate" values="0 22 43;-25 22 43;0 22 43" dur="1.6s" repeatCount="indefinite"/></svg>,
-    rear: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="50" stroke={c} strokeWidth="3" transform="rotate(15 40 40)"/><line x1="40" y1="42" x2="20" y2="55" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="60" y2="55" stroke={c} strokeWidth="3"/><circle cx="16" cy="53" r="5" fill={c} opacity="0.4"/><circle cx="64" cy="53" r="5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
-    arnold: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="35" r="9" fill={c} opacity="0.8"/><line x1="40" y1="44" x2="40" y2="60" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="28" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="52" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="22" y2="30" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="58" y2="30" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 30;15 40 30;0 40 30" dur="2s" repeatCount="indefinite"/></svg>,
-    shrug: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="22" y2="36" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="58" y2="36" stroke={c} strokeWidth="3"/><rect x="12" y="32" width="10" height="8" rx="4" fill={c} opacity="0.5"/><rect x="58" y="32" width="10" height="8" rx="4" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1.2s" repeatCount="indefinite"/></svg>,
-    // Legs
-    squat: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="45" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="25" y2="62" stroke={c} strokeWidth="3"/><line x1="40" y1="45" x2="55" y2="62" stroke={c} strokeWidth="3"/><rect x="12" y="13" width="56" height="7" rx="3.5" fill={c} opacity="0.3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,10;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
-    rdl: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="42" stroke={c} strokeWidth="3" transform="rotate(25 40 34)"/><line x1="40" y1="42" x2="25" y2="58" stroke={c} strokeWidth="3"/><line x1="40" y1="42" x2="55" y2="58" stroke={c} strokeWidth="3"/><rect x="14" y="60" width="52" height="7" rx="3.5" fill={c} opacity="0.4"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;20 40 40;0 40 40" dur="1.6s" repeatCount="indefinite"/></svg>,
-    legpress: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="30" width="30" height="40" rx="6" fill={c} opacity="0.15" stroke={c} strokeWidth="1"/><circle cx="20" cy="22" r="8" fill={c} opacity="0.8"/><line x1="20" y1="30" x2="20" y2="46" stroke={c} strokeWidth="3"/><line x1="20" y1="38" x2="38" y2="38" stroke={c} strokeWidth="3"/><rect x="38" y="28" width="35" height="22" rx="5" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="translate" values="0,0;8,0;0,0" dur="1.4s" repeatCount="indefinite"/></svg>,
-    lunge: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="38" cy="16" r="9" fill={c} opacity="0.8"/><line x1="38" y1="25" x2="38" y2="42" stroke={c} strokeWidth="3"/><line x1="38" y1="42" x2="22" y2="62" stroke={c} strokeWidth="3"/><line x1="38" y1="42" x2="58" y2="55" stroke={c} strokeWidth="3"/><line x1="58" y1="55" x2="58" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,6;0,0" dur="1.5s" repeatCount="indefinite"/></svg>,
-    legcurl: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="5" y="30" width="70" height="10" rx="5" fill={c} opacity="0.2"/><circle cx="22" cy="22" r="8" fill={c} opacity="0.8"/><line x1="22" y1="30" x2="22" y2="46" stroke={c} strokeWidth="3"/><line x1="22" y1="38" x2="55" y2="38" stroke={c} strokeWidth="3"/><line x1="55" y1="38" x2="62" y2="22" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 55 38;-35 55 38;0 55 38" dur="1.4s" repeatCount="indefinite"/></svg>,
-    calf: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="50" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="28" y2="68" stroke={c} strokeWidth="3"/><line x1="40" y1="50" x2="52" y2="68" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="0.9s" repeatCount="indefinite"/></svg>,
-    // Core & Cardio
-    plank: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="15" cy="35" r="8" fill={c} opacity="0.8"/><line x1="23" y1="38" x2="62" y2="44" stroke={c} strokeWidth="4"/><line x1="30" y1="40" x2="30" y2="56" stroke={c} strokeWidth="3"/><line x1="55" y1="43" x2="55" y2="58" stroke={c} strokeWidth="3"/><rect x="8" y="58" width="64" height="5" rx="2.5" fill={c} opacity="0.2"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="2s" repeatCount="indefinite"/></svg>,
-    crunch: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="55" width="64" height="8" rx="4" fill={c} opacity="0.2"/><circle cx="35" cy="28" r="9" fill={c} opacity="0.8"/><path d="M35,37 Q40,50 50,55" stroke={c} strokeWidth="3" fill="none"/><line x1="50" y1="55" x2="62" y2="55" stroke={c} strokeWidth="3"/><line x1="35" y1="45" x2="20" y2="55" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 50;-20 40 50;0 40 50" dur="1.3s" repeatCount="indefinite"/></svg>,
-    twist: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><line x1="40" y1="31" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="20" y2="35" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="60" y2="35" stroke={c} strokeWidth="3"/><circle cx="16" cy="33" r="5" fill={c} opacity="0.5"/><circle cx="64" cy="33" r="5" fill={c} opacity="0.5"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;15 40 40;-15 40 40;0 40 40" dur="1.5s" repeatCount="indefinite"/></svg>,
-    legraise: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="8" y="50" width="64" height="8" rx="4" fill={c} opacity="0.2"/><circle cx="22" cy="28" r="8" fill={c} opacity="0.8"/><line x1="22" y1="36" x2="22" y2="52" stroke={c} strokeWidth="3"/><line x1="22" y1="45" x2="38" y2="52" stroke={c} strokeWidth="3"/><line x1="38" y1="52" x2="62" y2="28" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 38 52;-30 38 52;0 38 52" dur="1.4s" repeatCount="indefinite"/></svg>,
-    burpee: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="14" r="8" fill={c} opacity="0.8"/><line x1="40" y1="22" x2="40" y2="40" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="26" y2="24" stroke={c} strokeWidth="3"/><line x1="40" y1="30" x2="54" y2="24" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="28" y2="56" stroke={c} strokeWidth="3"/><line x1="40" y1="40" x2="52" y2="56" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;0,-10;0,20;0,0" dur="1.6s" repeatCount="indefinite"/></svg>,
-    mountain: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="14" cy="32" r="7" fill={c} opacity="0.8"/><line x1="21" y1="35" x2="55" y2="42" stroke={c} strokeWidth="3"/><line x1="36" y1="38" x2="36" y2="54" stroke={c} strokeWidth="3"/><line x1="55" y1="42" x2="55" y2="58" stroke={c} strokeWidth="3"/><line x1="36" y1="54" x2="28" y2="66" stroke={c} strokeWidth="2.5"/><line x1="55" y1="58" x2="65" y2="66" stroke={c} strokeWidth="2.5"/><animateTransform attributeName="transform" type="translate" values="0,0;5,0;0,0;-5,0;0,0" dur="0.8s" repeatCount="indefinite"/></svg>,
-    // Recovery
-    foam: <svg viewBox="0 0 80 80" width="80" height="80"><rect x="10" y="50" width="60" height="14" rx="7" fill={c} opacity="0.3"/><circle cx="25" cy="35" r="8" fill={c} opacity="0.8"/><line x1="25" y1="43" x2="40" y2="52" stroke={c} strokeWidth="3"/><line x1="40" y1="52" x2="65" y2="52" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="translate" values="0,0;5,0;0,0" dur="2s" repeatCount="indefinite"/></svg>,
-    stretch: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="18" r="9" fill={c} opacity="0.8"/><line x1="40" y1="27" x2="40" y2="48" stroke={c} strokeWidth="3"/><line x1="40" y1="36" x2="16" y2="28" stroke={c} strokeWidth="3"/><line x1="40" y1="36" x2="64" y2="28" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="25" y2="65" stroke={c} strokeWidth="3"/><line x1="40" y1="48" x2="55" y2="65" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 40 40;8 40 40;-8 40 40;0 40 40" dur="3s" repeatCount="indefinite"/></svg>,
-    breath: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="28" fill="none" stroke={c} strokeWidth="2" opacity="0.3"><animate attributeName="r" values="20;30;20" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.1;0.5" dur="3s" repeatCount="indefinite"/></circle><circle cx="40" cy="40" r="14" fill={c} opacity="0.6"><animate attributeName="r" values="10;18;10" dur="3s" repeatCount="indefinite"/></circle></svg>,
-    hip: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="30" cy="22" r="8" fill={c} opacity="0.8"/><line x1="30" y1="30" x2="30" y2="48" stroke={c} strokeWidth="3"/><line x1="30" y1="42" x2="15" y2="55" stroke={c} strokeWidth="3"/><line x1="30" y1="42" x2="55" y2="38" stroke={c} strokeWidth="3"/><line x1="55" y1="38" x2="62" y2="55" stroke={c} strokeWidth="3"/><animateTransform attributeName="transform" type="rotate" values="0 30 42;10 30 42;0 30 42" dur="2s" repeatCount="indefinite"/></svg>,
-    camel: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="22" r="9" fill={c} opacity="0.8"/><path d="M40,31 Q25,45 40,55 Q55,45 40,31" stroke={c} strokeWidth="3" fill="none"><animate attributeName="d" values="M40,31 Q25,45 40,55 Q55,45 40,31;M40,31 Q22,50 40,60 Q58,50 40,31;M40,31 Q25,45 40,55 Q55,45 40,31" dur="2s" repeatCount="indefinite"/></path><line x1="30" y1="55" x2="25" y2="68" stroke={c} strokeWidth="3"/><line x1="50" y1="55" x2="55" y2="68" stroke={c} strokeWidth="3"/></svg>,
-    child: <svg viewBox="0 0 80 80" width="80" height="80"><circle cx="65" cy="30" r="8" fill={c} opacity="0.8"/><path d="M65,38 Q55,48 35,50" stroke={c} strokeWidth="3" fill="none"/><line x1="35" y1="50" x2="12" y2="50" stroke={c} strokeWidth="3"/><line x1="35" y1="50" x2="30" y2="62" stroke={c} strokeWidth="2.5"/><line x1="50" y1="46" x2="50" y2="62" stroke={c} strokeWidth="2.5"/><animateTransform attributeName="transform" type="translate" values="0,0;0,3;0,0" dur="3s" repeatCount="indefinite"/></svg>,
-  };
-  return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",width:80,height:80,filter:`drop-shadow(0 0 8px ${c}55)`}}>
-      {anims[type] || anims.stretch}
-    </div>
-  );
-}
-
 // ─── Main App ─────────────────────────────────────────────────────────────────
-
-// ─── PaymentFlow Component ────────────────────────────────────────────────────
-function PaymentFlow({ cu, upiId, onPaid }) {
-  const [step, setStep] = useState("idle"); // idle | choosing | redirected | confirming | success
-  const [selMethod, setSelMethod] = useState("GPay");
-  const [utr, setUtr] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  if (cu.status === "Paid" && step !== "success") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.25)",borderRadius:20,padding:16,display:"flex",alignItems:"center",gap:14}}>
-      <div style={{fontSize:36}}>✅</div>
-      <div>
-        <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--neon)"}}>Membership Active</div>
-        <div style={{fontSize:13,color:"var(--text2)"}}>Next due: <span style={{color:"var(--text)",fontWeight:600}}>{cu.dueDate}</span></div>
-      </div>
-    </div>
-  );
-
-  if (step === "success") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1a10)",border:"1px solid rgba(0,255,136,0.4)",borderRadius:20,padding:24,textAlign:"center"}}>
-      <div style={{fontSize:52,marginBottom:10}}>🎉</div>
-      <div style={{fontFamily:"Rajdhani",fontSize:24,fontWeight:700,color:"var(--neon)",marginBottom:6}}>Payment Successful!</div>
-      <div style={{fontSize:13,color:"var(--text2)",marginBottom:14}}>Membership is now active. See you at the gym! 💪</div>
-      <button className="btn-primary" onClick={()=>setStep("idle")}>Done</button>
-    </div>
-  );
-
-  if (step === "idle") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#1a0810,#0d1020)",border:"1px solid rgba(255,68,68,0.35)",borderRadius:20,padding:20}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(255,68,68,0.12)",border:"1px solid rgba(255,68,68,0.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:"var(--danger)",fontWeight:700}}>🔴 PAYMENT OVERDUE</div>
-        <div style={{fontSize:28}}>💳</div>
-      </div>
-      <div style={{fontFamily:"Rajdhani",fontSize:42,fontWeight:700,color:"var(--danger)",margin:"6px 0 2px"}}>₹{cu.fees}</div>
-      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Pay to UPI · <span style={{color:"var(--neon)",fontWeight:600}}>{upiId}</span></div>
-      <button className="btn-primary" style={{background:"linear-gradient(135deg,#ff4444,#ff6b35)",boxShadow:"0 4px 20px rgba(255,68,68,0.4)"}} onClick={()=>setStep("choosing")}>
-        💳 PAY NOW ₹{cu.fees}
-      </button>
-    </div>
-  );
-
-  if (step === "choosing") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(0,212,255,0.3)",borderRadius:20,padding:20}}>
-      <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Choose Payment App</div>
-      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Tap an app — you'll be redirected to pay ₹{cu.fees}</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-        {[{name:"Google Pay",emoji:"🟢"},{name:"PhonePe",emoji:"🟣"},{name:"Paytm",emoji:"🔵"},{name:"BHIM UPI",emoji:"🇮🇳"}].map(app=>(
-          <button key={app.name} onClick={()=>{
-            const upiUrl = `upi://pay?pa=${upiId}&pn=Crossfit+Gym&am=${cu.fees}&tn=Gym+Membership+Fee&cu=INR`;
-            window.location.href = upiUrl;
-            setTimeout(()=>setStep("redirected"), 1500);
-          }} style={{padding:"16px 10px",borderRadius:14,background:"var(--card)",border:"1px solid var(--border)",cursor:"pointer",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-            <span style={{fontSize:32}}>{app.emoji}</span>
-            <span style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{app.name}</span>
-          </button>
-        ))}
-      </div>
-      <button onClick={()=>setStep("idle")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Cancel</button>
-    </div>
-  );
-
-  if (step === "redirected") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(255,215,0,0.35)",borderRadius:20,padding:24,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:12}}>⏳</div>
-      <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,marginBottom:8}}>Complete Payment in UPI App</div>
-      <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.8,marginBottom:10}}>
-        Pay <span style={{color:"var(--danger)",fontWeight:700}}>₹{cu.fees}</span> to<br/>
-        <span style={{color:"var(--neon)",fontWeight:700,fontSize:16}}>{upiId}</span>
-      </div>
-      <div style={{background:"rgba(255,215,0,0.08)",border:"1px solid rgba(255,215,0,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:18,fontSize:12,color:"var(--warning)"}}>
-        ⚠️ After paying, come back here and tap "I've Paid"
-      </div>
-      <button className="btn-primary" style={{marginBottom:12,background:"linear-gradient(135deg,var(--neon),#00cc66)",boxShadow:"0 4px 20px rgba(0,255,136,0.4)"}} onClick={()=>setStep("confirming")}>
-        ✅ I've Paid — Confirm Now
-      </button>
-      <br/>
-      <button onClick={()=>setStep("choosing")} style={{background:"transparent",border:"none",color:"var(--text3)",fontSize:13,cursor:"pointer",textDecoration:"underline"}}>← Try a different app</button>
-    </div>
-  );
-
-  if (step === "confirming") return (
-    <div style={{margin:"0 16px 14px",background:"linear-gradient(135deg,#0a1a0d,#0d1520)",border:"1px solid rgba(0,255,136,0.35)",borderRadius:20,padding:20}}>
-      <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:4}}>Confirm Payment</div>
-      <div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>Select app used and enter UTR (optional)</div>
-      <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>Payment App</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {["GPay","PhonePe","Paytm","BHIM","Cash"].map(m=>(
-            <button key={m} onClick={()=>setSelMethod(m)} style={{
-              padding:"8px 14px",borderRadius:20,fontFamily:"Exo 2,sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",
-              background: selMethod===m ? "rgba(0,255,136,0.12)" : "var(--bg2)",
-              border: `1px solid ${selMethod===m ? "var(--neon)" : "var(--border)"}`,
-              color: selMethod===m ? "var(--neon)" : "var(--text2)",
-            }}>{m}</button>
-          ))}
-        </div>
-      </div>
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>UTR / Reference No. <span style={{color:"var(--text3)"}}>(optional)</span></div>
-        <input className="input-field" placeholder="e.g. 123456789012" value={utr} onChange={e=>setUtr(e.target.value)} style={{letterSpacing:1}}/>
-      </div>
-      <button className="btn-primary" style={{marginBottom:10}} disabled={loading} onClick={async()=>{
-        setLoading(true);
-        try { await onPaid(selMethod, utr); setStep("success"); }
-        catch(e) { alert("Error saving payment. Try again."); }
-        setLoading(false);
-      }}>
-        {loading ? "Saving..." : "🎉 CONFIRM & MARK AS PAID"}
-      </button>
-      <button onClick={()=>setStep("redirected")} style={{width:"100%",padding:"11px",background:"transparent",border:"1px solid var(--border)",borderRadius:12,color:"var(--text2)",fontFamily:"Exo 2,sans-serif",fontSize:14,cursor:"pointer"}}>← Go Back</button>
-    </div>
-  );
-
-  return null;
-}
-
 export default function App() {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -1178,10 +1157,9 @@ export default function App() {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [memberCoins, setMemberCoins] = useState(0);
   const [editProfile, setEditProfile] = useState(false);
-  const [gymUpiId, setGymUpiId] = useState(OWNER.upiId);
-  const [newMember, setNewMember] = useState({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
-  const [newMemberPhoto, setNewMemberPhoto] = useState(null);
-  const [newMemberFeePaid, setNewMemberFeePaid] = useState(false);
+  const [newMember, setNewMember] = useState({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+  const [whatsappConfig, setWhatsappConfig] = useState({ accountSid: "", authToken: "", fromNumber: "whatsapp:+14155238886" });
+  const [whatsappLogs, setWhatsappLogs] = useState([]);
   const [loginRole, setLoginRole] = useState("owner");
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
@@ -1213,16 +1191,7 @@ export default function App() {
       console.error("Firestore error:", err);
       setDbLoading(false);
     });
-
-    // Load gym settings (UPI ID) from Firebase
-    const settingsUnsub = onSnapshot(doc(db, "settings", "gym"), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.upiId) setGymUpiId(data.upiId);
-      }
-    });
-
-    return () => { unsub(); settingsUnsub(); };
+    return () => unsub();
   }, []);
 
   const showToast = (msg) => {
@@ -1264,64 +1233,105 @@ export default function App() {
     setModal(null);
   };
 
-  // Compress image to small size before saving to Firestore
-  const compressPhoto = (base64, maxSize = 200) => new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ratio = Math.min(maxSize / img.width, maxSize / img.height);
-      canvas.width = img.width * ratio;
-      canvas.height = img.height * ratio;
-      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL("image/jpeg", 0.7));
-    };
-    img.src = base64;
-  });
+  // ── WhatsApp Notification ─────────────────────────────────────────────────
+  const sendWhatsAppWelcome = async (member) => {
+    const { accountSid, authToken, fromNumber } = whatsappConfig;
+    if (!accountSid || !authToken) {
+      const log = { id: Date.now(), member: member.name, phone: member.phone, status: "skipped", reason: "Twilio credentials not configured", time: new Date().toLocaleTimeString() };
+      setWhatsappLogs(p => [log, ...p.slice(0,49)]);
+      return { success: false, reason: "not_configured" };
+    }
+    if (!member.phone) {
+      const log = { id: Date.now(), member: member.name, phone: "—", status: "skipped", reason: "No phone number provided", time: new Date().toLocaleTimeString() };
+      setWhatsappLogs(p => [log, ...p.slice(0,49)]);
+      return { success: false, reason: "no_phone" };
+    }
 
-  const [addingMember, setAddingMember] = useState(false);
+    const gymName = "Crossfit Gym";
+    const toNumber = `whatsapp:+91${member.phone.replace(/\D/g,"")}`;
+    const joinDate = new Date(member.joinDate).toLocaleDateString("en-IN", { day:"numeric", month:"long", year:"numeric" });
+    const dueDate = new Date(member.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"long", year:"numeric" });
+
+    const message =
+`🏋️ *Welcome to ${gymName}!* 🏋️
+
+Hello *${member.name}*, your membership has been activated successfully! 🎉
+
+━━━━━━━━━━━━━━━━━━━━
+📋 *MEMBERSHIP DETAILS*
+━━━━━━━━━━━━━━━━━━━━
+🏷️ Member Name: *${member.name}*
+📅 Joining Date: *${joinDate}*
+💎 Plan: *${member.plan}*
+💰 Monthly Fee: *₹${member.fees}*
+📆 Next Payment: *${dueDate}*
+
+━━━━━━━━━━━━━━━━━━━━
+🔐 *YOUR LOGIN CREDENTIALS*
+━━━━━━━━━━━━━━━━━━━━
+👤 Username: *${member.username}*
+🔑 Password: *${member.password}*
+
+━━━━━━━━━━━━━━━━━━━━
+💪 Stay consistent, stay strong!
+For support, contact the gym desk.
+
+_${gymName} — Powered by CrossFit App_ 🔥`;
+
+    try {
+      const creds = btoa(`${accountSid}:${authToken}`);
+      const body = new URLSearchParams({ From: fromNumber, To: toNumber, Body: message });
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
+        method: "POST",
+        headers: { Authorization: `Basic ${creds}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      });
+      const data = await res.json();
+      if (res.ok && data.sid) {
+        const log = { id: Date.now(), member: member.name, phone: member.phone, status: "sent", sid: data.sid, time: new Date().toLocaleTimeString() };
+        setWhatsappLogs(p => [log, ...p.slice(0,49)]);
+        return { success: true, sid: data.sid };
+      } else {
+        const log = { id: Date.now(), member: member.name, phone: member.phone, status: "failed", reason: data.message||"API error", time: new Date().toLocaleTimeString() };
+        setWhatsappLogs(p => [log, ...p.slice(0,49)]);
+        return { success: false, reason: data.message };
+      }
+    } catch (err) {
+      const log = { id: Date.now(), member: member.name, phone: member.phone, status: "error", reason: err.message, time: new Date().toLocaleTimeString() };
+      setWhatsappLogs(p => [log, ...p.slice(0,49)]);
+      return { success: false, reason: err.message };
+    }
+  };
 
   const addMember = async () => {
-    if (!newMember.name || !newMember.username || !newMember.password) {
-      showToast("❌ Fill all fields — Name, Username and Password required"); return;
-    }
-    setAddingMember(true);
-    try {
-      const id = `m${Date.now()}`;
-      const today = new Date().toISOString().split("T")[0];
-      const nextDue = new Date();
-      nextDue.setMonth(nextDue.getMonth() + 1);
-      const nextDueStr = nextDue.toISOString().split("T")[0];
-      const initialPayments = newMemberFeePaid
-        ? [{ date: today, amount: Number(newMember.fees), status: "Paid", method: "Cash" }]
-        : [];
-      // Compress photo if present to avoid Firestore size limit
-      let photo = null;
-      if (newMemberPhoto) {
-        photo = await compressPhoto(newMemberPhoto, 200);
-      }
-      const m = {
-        id, ...newMember, fees: Number(newMember.fees),
-        photo,
-        age: 25, height: 170, weight: 70, gender: "Male",
-        goal: "Maintenance", activity: "Moderate", medical: "None",
-        dueDate: newMemberFeePaid ? nextDueStr : today,
-        status: newMemberFeePaid ? "Paid" : "Unpaid",
-        joinDate: today,
-        coins: 0, streak: 0, lastActive: today,
-        payments: initialPayments, workoutLog: {}, badges: [],
-      };
-      await setDoc(doc(db, "members", id), m);
-      setNewMember({ name: "", username: "", password: "", plan: "Basic", fees: "1499" });
-      setNewMemberPhoto(null);
-      setNewMemberFeePaid(false);
-      setModal(null);
-      setActiveTab("members");
-      showToast(newMemberFeePaid ? "✅ Member added & fee marked Paid!" : "✅ Member added — fee pending");
-    } catch (err) {
-      console.error("addMember error:", err);
-      showToast("❌ Error: " + (err.message || "Failed to add member"));
-    } finally {
-      setAddingMember(false);
+    if (!newMember.name || !newMember.username || !newMember.password) { showToast("❌ Fill all required fields"); return; }
+    const id = `m${Date.now()}`;
+    const joinDate = new Date().toISOString().split("T")[0];
+    const dueDate = new Date(Date.now() + 30*24*60*60*1000).toISOString().split("T")[0];
+    const m = {
+      id, ...newMember, fees: Number(newMember.fees),
+      age: 25, height: 170, weight: 70, gender: "Male",
+      goal: "Maintenance", activity: "Moderate", medical: "None",
+      dueDate, status: "Unpaid", joinDate,
+      coins: 0, streak: 0, lastActive: joinDate,
+      payments: [], workoutLog: {}, badges: [],
+    };
+    await setDoc(doc(db, "members", id), m);
+
+    // ── Send WhatsApp welcome message ──────────────────────────
+    const waResult = await sendWhatsAppWelcome(m);
+    setNewMember({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+    setModal(null);
+    setActiveTab("members");
+
+    if (waResult.success) {
+      showToast("✅ Member added! 📱 WhatsApp sent!");
+    } else if (waResult.reason === "not_configured") {
+      showToast("✅ Member added! (Configure WhatsApp in Settings)");
+    } else if (waResult.reason === "no_phone") {
+      showToast("✅ Member added! (No phone → WhatsApp skipped)");
+    } else {
+      showToast("✅ Member added! ⚠️ WhatsApp failed — check logs");
     }
   };
 
@@ -1455,7 +1465,7 @@ export default function App() {
       <div className="section-header"><div className="section-title">Members</div><div className="see-all" onClick={()=>setActiveTab("members")}>View All →</div></div>
       {members.slice(0,3).map(m=>(
         <div key={m.id} className="member-card" onClick={()=>{setSelectedMember(m);setModal("memberDetail");}}>
-          <div className="member-avatar" style={{overflow:"hidden",padding:0}}>{m.photo?<img src={m.photo} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:12}}/>:(m.gender==="Female"?"👩":"👨")}</div>
+          <div className="member-avatar">{m.gender==="Female"?"👩":"👨"}</div>
           <div className="member-info">
             <div className="member-name">{m.name}</div>
             <div className="row mt-8" style={{gap:6}}><span className={`badge-plan-${(m.plan||"basic").toLowerCase()}`}>{m.plan}</span><span style={{fontSize:12,color:"var(--text3)"}}>₹{m.fees}/mo</span></div>
@@ -1472,7 +1482,7 @@ export default function App() {
       <div className="tab-bar">{["All","Active","Unpaid","Premium"].map(f=><button key={f} className={`tab-pill${f==="All"?" active":""}`}>{f}</button>)}</div>
       {members.map(m=>(
         <div key={m.id} className="member-card" onClick={()=>{setSelectedMember(m);setModal("memberDetail");}}>
-          <div className="member-avatar" style={{overflow:"hidden",padding:0}}>{m.photo?<img src={m.photo} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:12}}/>:(m.gender==="Female"?"👩":"👨")}</div>
+          <div className="member-avatar">{m.gender==="Female"?"👩":"👨"}</div>
           <div className="member-info">
             <div className="member-name">{m.name}</div>
             <div className="text-sm text-muted mt-8">@{m.username} · Joined {m.joinDate}</div>
@@ -1501,7 +1511,7 @@ export default function App() {
       <div className="section-header"><div className="section-title">Member Progress</div></div>
       {members.map(m=>(
         <div key={m.id} className="card" style={{marginBottom:10}}>
-          <div className="row"><div className="member-avatar" style={{width:36,height:36,fontSize:16,overflow:"hidden",padding:0}}>{m.photo?<img src={m.photo} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}/>:(m.gender==="Female"?"👩":"👨")}</div><div className="flex-1"><div className="fw-7" style={{fontSize:14}}>{m.name}</div><div className="text-xs text-muted">{m.goal}</div></div><div className="streak-display" style={{padding:"5px 10px"}}><span>🔥</span><span style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--warning)"}}>{m.streak}</span></div></div>
+          <div className="row"><div className="member-avatar" style={{width:36,height:36,fontSize:16}}>{m.gender==="Female"?"👩":"👨"}</div><div className="flex-1"><div className="fw-7" style={{fontSize:14}}>{m.name}</div><div className="text-xs text-muted">{m.goal}</div></div><div className="streak-display" style={{padding:"5px 10px"}}><span>🔥</span><span style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--warning)"}}>{m.streak}</span></div></div>
           <div className="progress-wrap mt-12"><div className="progress-label"><span className="text-xs text-muted">Coins: {m.coins}</span><span className="text-xs text-gold">Goal: 1000</span></div><div className="progress-bar-bg"><div className="progress-bar-fill progress-gold" style={{width:`${Math.min((m.coins/1000)*100,100)}%`}}/></div></div>
         </div>
       ))}
@@ -1513,7 +1523,7 @@ export default function App() {
     return (
       <div>
         <div className="profile-hero">
-          <div className="profile-avatar-lg" style={{overflow:"hidden",padding:0}}>{cu.photo?<img src={cu.photo} alt={cu.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:20}}/>:(cu.gender==="Female"?"👩":"👨")}</div>
+          <div className="profile-avatar-lg">{cu.gender==="Female"?"👩":"👨"}</div>
           <div className="profile-name">{cu.name}</div>
           <div className="profile-sub">{cu.plan} Plan · Joined {cu.joinDate}</div>
           <div style={{display:"flex",gap:12,justifyContent:"center",marginTop:14}}>
@@ -1523,51 +1533,30 @@ export default function App() {
           </div>
         </div>
         <div style={{padding:"0 16px 12px"}}><div className="progress-wrap"><div className="progress-label"><span className="text-sm text-muted">Coin Progress</span><span className="text-sm text-gold">{memberCoins}/1000</span></div><div className="progress-bar-bg"><div className="progress-bar-fill progress-gold" style={{width:`${Math.min((memberCoins/1000)*100,100)}%`}}/></div></div></div>
-        {/* ── Fee Status Cards ── */}
         <div className="stats-grid">
-          <div className={`stat-card ${cu.status==="Paid"?"green":"orange"}`}>
-            <div className="stat-icon">{cu.status==="Paid"?"✅":"⚠️"}</div>
-            <div className="stat-value" style={{fontSize:18}}>{cu.status==="Unpaid"?"OVERDUE":"ACTIVE"}</div>
-            <div className="stat-label">Fee Status</div>
-            <div className={`stat-change ${cu.status==="Paid"?"up":"down"}`}>{cu.status==="Paid"?"✓ Paid":"⚠ Due Now"}</div>
-          </div>
-          <div className="stat-card blue">
-            <div className="stat-icon">📅</div>
-            <div className="stat-value" style={{fontSize:16}}>{cu.dueDate}</div>
-            <div className="stat-label">Next Due Date</div>
-          </div>
+          <div className="stat-card orange"><div className="stat-icon">💳</div><div className="stat-value" style={{fontSize:18}}>{cu.status==="Unpaid"?"OVERDUE":"ACTIVE"}</div><div className="stat-label">Fee Status</div><div className={`stat-change ${cu.status==="Paid"?"up":"down"}`}>{cu.status==="Paid"?"✓ Paid":"⚠ Unpaid"}</div></div>
+          <div className="stat-card blue"><div className="stat-icon">📅</div><div className="stat-value" style={{fontSize:16}}>{cu.dueDate}</div><div className="stat-label">Due Date</div></div>
         </div>
-
-        {/* ── PAYMENT FLOW ── */}
-        <PaymentFlow cu={cu} upiId={gymUpiId} onPaid={async (method, utr) => {
-          const today = new Date().toISOString().split("T")[0];
-          const nextDue = new Date();
-          nextDue.setMonth(nextDue.getMonth() + 1);
-          const newPayment = { date: today, amount: Number(cu.fees), status: "Paid", method, ...(utr ? { utr } : {}) };
-          const updatedPayments = [newPayment, ...(cu.payments || [])];
-          await updateDoc(doc(db, "members", user.id), {
-            status: "Paid",
-            dueDate: nextDue.toISOString().split("T")[0],
-            payments: updatedPayments,
-          });
-          showToast("🎉 Payment confirmed! Membership active!");
-        }} />
-
+        {cu.status==="Unpaid"&&(
+          <div className="upi-card">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div><div className="ai-badge" style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(0,255,136,0.1)",border:"1px solid rgba(0,255,136,0.2)",borderRadius:20,padding:"4px 12px",marginBottom:8,fontSize:11,color:"var(--neon)",fontWeight:600}}>⚠️ PAYMENT DUE</div><div className="upi-amount">₹{cu.fees}</div><div style={{fontSize:13,color:"var(--text2)"}}>UPI: {OWNER.upiId}</div></div>
+              <div style={{fontSize:36}}>💳</div>
+            </div>
+            <div className="upi-apps">
+              {[{name:"GPay",icon:"🟢"},{name:"PhonePe",icon:"🟣"},{name:"Paytm",icon:"🔵"},{name:"BHIM",icon:"🟡"}].map(app=>(
+                <button key={app.name} className="upi-app-btn" onClick={()=>showToast(`Opening ${app.name}... UPI: ${OWNER.upiId}`)}><span className="upi-app-icon">{app.icon}</span>{app.name}</button>
+              ))}
+            </div>
+            <button className="btn-primary" style={{marginTop:8}} onClick={()=>{showToast("🔗 Opening UPI Intent...");window.open(`upi://pay?pa=${OWNER.upiId}&pn=Crossfit&am=${cu.fees}&tn=Gym+Membership`,"_blank");}}>PAY NOW ₹{cu.fees}</button>
+          </div>
+        )}
         <div className="section-header"><div className="section-title">Payment History</div></div>
         <div className="card">
-          {(cu.payments||[]).length > 0 ? (cu.payments||[]).map((p,i)=>(
-            <div key={i} className="payment-item">
-              <div>
-                <div style={{fontSize:14,fontWeight:600,color:"var(--text)"}}>{p.method}</div>
-                <div className="payment-date">{p.date}</div>
-                {p.utr && <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>UTR: {p.utr}</div>}
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div className="payment-amount">₹{p.amount}</div>
-                <div className={`text-xs ${p.status==="Paid"?"text-neon":"text-danger"}`}>{p.status==="Paid"?"✓ Paid":"✗ Failed"}</div>
-              </div>
-            </div>
-          )) : <div className="text-center text-muted" style={{padding:20}}>No payments yet</div>}
+          {(cu.payments||[]).map((p,i)=>(
+            <div key={i} className="payment-item"><div><div style={{fontSize:14,fontWeight:500}}>{p.method}</div><div className="payment-date">{p.date}</div></div><div><div className="payment-amount">₹{p.amount}</div><div className={`text-xs ${p.status==="Paid"?"text-neon":"text-danger"}`}>{p.status}</div></div></div>
+          ))}
+          {(!cu.payments||cu.payments.length===0)&&<div className="text-center text-muted" style={{padding:16}}>No payments yet</div>}
         </div>
         <div className="section-header"><div className="section-title">Badges</div></div>
         <div className="card"><div className="badges-wrap">{(cu.badges||[]).map((b,i)=><span key={i} className="badge-item">{b}</span>)}{memberCoins>=100&&<span className="badge-item" style={{borderColor:"var(--gold)",color:"var(--gold)"}}>⭐ {memberCoins}+ Coins</span>}</div></div>
@@ -1577,154 +1566,157 @@ export default function App() {
 
   const MemberWorkout = () => {
     const today = new Date();
-    const dayIdx = today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
-    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const todayWorkout = DAILY_WORKOUTS[dayIdx];
-    const dateStr = today.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" });
-    const [doneExercises, setDoneExercises] = useState([]);
-    const [selectedDay, setSelectedDay] = useState(dayIdx);
-    const viewWorkout = DAILY_WORKOUTS[selectedDay];
+    const dayIdx = today.getDay();
+    const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const fullDayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const dateStr = today.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
+    const [doneEx, setDoneEx] = useState([]);
+    const [selDay, setSelDay] = useState(dayIdx);
+    const [mode, setMode] = useState("beginner");
 
-    const toggleExercise = (idx) => {
-      setDoneExercises(prev =>
-        prev.includes(idx) ? prev.filter(i=>i!==idx) : [...prev, idx]
-      );
-    };
+    const plan = WORKOUT_PLANS[mode];
+    const todayW = plan.schedule[dayIdx];
+    const viewW = plan.schedule[selDay];
+
+    const toggle = (i) => setDoneEx(p => p.includes(i)?p.filter(x=>x!==i):[...p,i]);
+
+    const MODES = [
+      {id:"beginner",   label:"Beginner",     icon:"🌱", color:"#00ff88", desc:"Simple & safe"},
+      {id:"intermediate",label:"Intermediate",icon:"🔥", color:"#ff6b35", desc:"Progressive"},
+      {id:"professional",label:"Pro",          icon:"⚡", color:"#ffd700", desc:"Max intensity"},
+    ];
 
     return (
       <div style={{paddingBottom:24}}>
 
+        {/* ── Mode Selector ── */}
+        <div style={{padding:"16px 16px 10px"}}>
+          <div style={{fontFamily:"Rajdhani",fontSize:12,fontWeight:700,color:"var(--text3)",letterSpacing:2,marginBottom:10}}>SELECT YOUR MODE</div>
+          <div style={{display:"flex",gap:8}}>
+            {MODES.map(m=>(
+              <div key={m.id} onClick={()=>{setMode(m.id);setDoneEx([]);setSelDay(dayIdx);}} style={{
+                flex:1,padding:"10px 6px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                background:mode===m.id?`${m.color}18`:"var(--card)",
+                border:`2px solid ${mode===m.id?m.color:"var(--border)"}`,
+                transition:"all 0.25s",
+                boxShadow:mode===m.id?`0 0 18px ${m.color}30`:"none",
+              }}>
+                <div style={{fontSize:22,marginBottom:3}}>{m.icon}</div>
+                <div style={{fontSize:11,fontWeight:700,color:mode===m.id?m.color:"var(--text2)"}}>{m.label}</div>
+                <div style={{fontSize:9,color:"var(--text3)",marginTop:2}}>{m.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ── Today Banner ── */}
         <div style={{
-          margin:"16px 16px 14px",
-          background:`linear-gradient(135deg, ${todayWorkout.bg.replace("0.08","0.15")}, rgba(0,0,0,0.3))`,
-          border:`1px solid ${todayWorkout.color}44`,
-          borderRadius:20, padding:"18px 20px",
-          position:"relative", overflow:"hidden",
+          margin:"0 16px 14px",
+          background:`linear-gradient(135deg,${todayW.color}15,rgba(0,0,0,0.3))`,
+          border:`1px solid ${todayW.color}44`,borderRadius:20,padding:"16px 20px",
+          position:"relative",overflow:"hidden",
         }}>
-          <div style={{position:"absolute",top:-20,right:-20,fontSize:80,opacity:0.06,lineHeight:1}}>💪</div>
-          <div style={{fontSize:11,color:todayWorkout.color,fontWeight:700,letterSpacing:2,marginBottom:4}}>TODAY · {dateStr.toUpperCase()}</div>
-          <div style={{fontFamily:"Rajdhani",fontSize:26,fontWeight:700,color:"var(--text)",marginBottom:6}}>{todayWorkout.focus}</div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{background:`${todayWorkout.color}22`,border:`1px solid ${todayWorkout.color}44`,borderRadius:20,padding:"4px 12px",fontSize:12,color:todayWorkout.color,fontWeight:600}}>
-              {todayWorkout.exercises.length} Exercises
-            </div>
-            <div style={{fontSize:12,color:"var(--text2)"}}>🪙 +{todayWorkout.exercises.length * 10} coins on completion</div>
+          <div style={{position:"absolute",top:-20,right:-20,fontSize:80,opacity:0.05}}>💪</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+            <div style={{fontSize:11,color:todayW.color,fontWeight:700,letterSpacing:1.5}}>TODAY · {dateStr.toUpperCase()}</div>
+            <div style={{background:plan.color+"22",border:`1px solid ${plan.color}44`,borderRadius:20,padding:"2px 8px",fontSize:10,color:plan.color,fontWeight:700}}>{plan.icon} {plan.label}</div>
           </div>
-          {/* Progress bar */}
-          {selectedDay === dayIdx && (
-            <div style={{marginTop:12}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+          <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:6}}>{todayW.focus}</div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{background:`${todayW.color}22`,border:`1px solid ${todayW.color}44`,borderRadius:20,padding:"3px 10px",fontSize:12,color:todayW.color,fontWeight:600}}>{todayW.exercises.length} Exercises</div>
+            <div style={{fontSize:11,color:"var(--text2)"}}>🪙 +{todayW.exercises.length*10} coins</div>
+          </div>
+          {selDay===dayIdx&&(
+            <div style={{marginTop:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:11,color:"var(--text3)"}}>Today's Progress</span>
-                <span style={{fontSize:11,color:todayWorkout.color,fontWeight:700}}>{doneExercises.length}/{todayWorkout.exercises.length}</span>
+                <span style={{fontSize:11,color:todayW.color,fontWeight:700}}>{doneEx.length}/{viewW.exercises.length}</span>
               </div>
-              <div style={{height:5,background:"rgba(255,255,255,0.08)",borderRadius:3,overflow:"hidden"}}>
-                <div style={{height:"100%",borderRadius:3,background:`linear-gradient(90deg,${todayWorkout.color},${todayWorkout.color}99)`,width:`${(doneExercises.length/todayWorkout.exercises.length)*100}%`,transition:"width 0.5s ease"}}/>
+              <div style={{height:4,background:"rgba(255,255,255,0.08)",borderRadius:2,overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:2,background:`linear-gradient(90deg,${todayW.color},${todayW.color}88)`,width:`${(doneEx.length/viewW.exercises.length)*100}%`,transition:"width 0.5s ease"}}/>
               </div>
             </div>
           )}
         </div>
 
         {/* ── Day Selector ── */}
-        <div style={{display:"flex",gap:6,padding:"0 16px 14px",overflowX:"auto",scrollbarWidth:"none"}}>
-          {dayNames.map((d,i)=>{
-            const w = DAILY_WORKOUTS[i];
-            const isToday = i === dayIdx;
-            const isSelected = i === selectedDay;
+        <div style={{display:"flex",gap:6,padding:"0 16px 12px",overflowX:"auto",scrollbarWidth:"none"}}>
+          {fullDayNames.map((d,i)=>{
+            const w=plan.schedule[i];
+            const isTod=i===dayIdx, isSel=i===selDay;
             return (
-              <div key={i} onClick={()=>setSelectedDay(i)} style={{
-                flexShrink:0, padding:"8px 12px", borderRadius:12, cursor:"pointer",
-                background: isSelected ? `${w.color}22` : "var(--card)",
-                border:`1px solid ${isSelected ? w.color : "var(--border)"}`,
-                transition:"all 0.25s", textAlign:"center", minWidth:52,
+              <div key={i} onClick={()=>{setSelDay(i);setDoneEx([]);}} style={{
+                flexShrink:0,padding:"8px 10px",borderRadius:12,cursor:"pointer",
+                background:isSel?`${w.color}22`:"var(--card)",
+                border:`1px solid ${isSel?w.color:"var(--border)"}`,
+                transition:"all 0.2s",textAlign:"center",minWidth:46,
               }}>
-                <div style={{fontSize:10,color: isSelected ? w.color : "var(--text3)",fontWeight:700,letterSpacing:0.5}}>{d.slice(0,3).toUpperCase()}</div>
-                {isToday && <div style={{width:4,height:4,background:w.color,borderRadius:"50%",margin:"3px auto 0",boxShadow:`0 0 6px ${w.color}`}}/>}
+                <div style={{fontSize:10,color:isSel?w.color:"var(--text3)",fontWeight:700}}>{dayNames[i]}</div>
+                {isTod&&<div style={{width:4,height:4,background:w.color,borderRadius:"50%",margin:"3px auto 0",boxShadow:`0 0 5px ${w.color}`}}/>}
               </div>
             );
           })}
         </div>
 
-        {/* ── Selected Day Header ── */}
-        {selectedDay !== dayIdx && (
-          <div style={{margin:"0 16px 14px",background:"rgba(255,255,255,0.03)",border:"1px solid var(--border)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
-            <div style={{fontSize:20}}>📅</div>
+        {/* ── Viewing another day note ── */}
+        {selDay!==dayIdx&&(
+          <div style={{margin:"0 16px 12px",background:"rgba(255,255,255,0.03)",border:"1px solid var(--border)",borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:16}}>📅</span>
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--text)"}}>{viewWorkout.day} — {viewWorkout.focus}</div>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--text)"}}>{fullDayNames[selDay]} — {viewW.focus}</div>
               <div style={{fontSize:11,color:"var(--text3)"}}>Viewing scheduled workout</div>
             </div>
           </div>
         )}
 
-        {/* ── Exercise Cards ── */}
-        <div style={{padding:"0 16px",display:"flex",flexDirection:"column",gap:12}}>
-          {viewWorkout.exercises.map((ex, idx) => {
-            const isDone = doneExercises.includes(idx) && selectedDay === dayIdx;
+        {/* ── Exercise List ── */}
+        <div style={{padding:"0 16px",display:"flex",flexDirection:"column",gap:8}}>
+          {viewW.exercises.map((ex,i)=>{
+            const done = doneEx.includes(i)&&selDay===dayIdx;
             return (
-              <div key={idx} onClick={()=>{ if(selectedDay===dayIdx) toggleExercise(idx); }}
+              <div key={i} onClick={()=>{if(selDay===dayIdx)toggle(i);}}
                 style={{
-                  background: isDone ? `${viewWorkout.color}0f` : "var(--card)",
-                  border:`1px solid ${isDone ? viewWorkout.color : "var(--border)"}`,
-                  borderRadius:18, padding:"14px 16px",
-                  display:"flex", alignItems:"center", gap:14,
-                  cursor: selectedDay===dayIdx ? "pointer" : "default",
-                  transition:"all 0.3s",
-                  boxShadow: isDone ? `0 0 20px ${viewWorkout.color}22` : "none",
-                  animation:`slideUp 0.3s ease ${idx*0.06}s both`,
+                  display:"flex",alignItems:"center",gap:12,
+                  background:done?`${viewW.color}0e`:"var(--card)",
+                  border:`1px solid ${done?viewW.color:"var(--border)"}`,
+                  borderRadius:14,padding:"11px 14px",
+                  cursor:selDay===dayIdx?"pointer":"default",
+                  transition:"all 0.25s",
+                  boxShadow:done?`0 0 14px ${viewW.color}1a`:"none",
                 }}
               >
-                {/* Animated SVG */}
+                {/* Number / check */}
                 <div style={{
-                  width:80, height:80, flexShrink:0,
-                  background: isDone ? `${viewWorkout.color}15` : "var(--bg2)",
-                  borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center",
-                  border:`1px solid ${isDone ? viewWorkout.color+"44" : "var(--border)"}`,
-                  transition:"all 0.3s",
+                  width:26,height:26,borderRadius:7,flexShrink:0,
+                  background:done?viewW.color:`${viewW.color}20`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontFamily:"Rajdhani",fontSize:12,fontWeight:700,
+                  color:done?"#000":viewW.color,transition:"all 0.25s",
                 }}>
-                  <ExerciseAnim type={ex.anim} color={isDone ? viewWorkout.color : viewWorkout.color+"99"}/>
+                  {done?"✓":(i+1)}
                 </div>
-
                 {/* Info */}
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{
-                    fontFamily:"Rajdhani",fontSize:17,fontWeight:700,
-                    color: isDone ? viewWorkout.color : "var(--text)",
-                    marginBottom:3, transition:"color 0.3s",
-                  }}>{ex.name}</div>
-                  <div style={{fontSize:12,color:"var(--text2)",marginBottom:6}}>{ex.muscle}</div>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                    <span style={{fontSize:11,fontWeight:600,color:viewWorkout.color,background:`${viewWorkout.color}15`,borderRadius:6,padding:"2px 8px"}}>{ex.sets}</span>
-                    <span style={{fontSize:11,fontWeight:600,color:"var(--text2)",background:"var(--bg3)",borderRadius:6,padding:"2px 8px"}}>{ex.reps}</span>
+                  <div style={{fontFamily:"Rajdhani",fontSize:15,fontWeight:700,color:done?viewW.color:"var(--text)",marginBottom:2,transition:"color 0.25s"}}>{ex.name}</div>
+                  <div style={{fontSize:10,color:"var(--text3)",marginBottom:4}}>{ex.muscle}</div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,fontWeight:600,color:viewW.color,background:`${viewW.color}15`,borderRadius:5,padding:"1px 6px"}}>{ex.sets}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:"var(--text2)",background:"var(--bg3)",borderRadius:5,padding:"1px 6px"}}>{ex.reps}</span>
                   </div>
                 </div>
-
-                {/* Done checkmark */}
-                {selectedDay === dayIdx && (
-                  <div style={{
-                    width:28,height:28,borderRadius:"50%",flexShrink:0,
-                    background: isDone ? viewWorkout.color : "var(--bg3)",
-                    border:`2px solid ${isDone ? viewWorkout.color : "var(--border)"}`,
-                    display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:13,fontWeight:700,color: isDone ? "#000" : "var(--text3)",
-                    transition:"all 0.3s",
-                    boxShadow: isDone ? `0 0 10px ${viewWorkout.color}66` : "none",
-                  }}>
-                    {isDone ? "✓" : ""}
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
         {/* ── All Done Banner ── */}
-        {selectedDay === dayIdx && doneExercises.length === viewWorkout.exercises.length && (
-          <div style={{margin:"16px 16px 0",background:`linear-gradient(135deg,${viewWorkout.color}18,${viewWorkout.color}08)`,border:`1px solid ${viewWorkout.color}44`,borderRadius:20,padding:24,textAlign:"center",animation:"slideUp 0.4s ease"}}>
-            <div style={{fontSize:52,marginBottom:10}}>🏆</div>
-            <div style={{fontFamily:"Rajdhani",fontSize:24,fontWeight:700,color:viewWorkout.color,marginBottom:6}}>Workout Complete!</div>
-            <div style={{fontSize:13,color:"var(--text2)",marginBottom:14}}>Amazing work! You crushed {viewWorkout.day}'s session 💪</div>
-            <button className="btn-primary" onClick={()=>{ completeTask({id:`day${dayIdx}`,name:viewWorkout.focus,coins:viewWorkout.exercises.length*10}); }}>
-              🪙 Claim +{viewWorkout.exercises.length*10} Coins
+        {selDay===dayIdx&&doneEx.length===viewW.exercises.length&&doneEx.length>0&&(
+          <div style={{margin:"14px 16px 0",background:`linear-gradient(135deg,${viewW.color}15,${viewW.color}06)`,border:`1px solid ${viewW.color}44`,borderRadius:18,padding:20,textAlign:"center"}}>
+            <div style={{fontSize:48,marginBottom:8}}>🏆</div>
+            <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,color:viewW.color,marginBottom:4}}>Workout Complete!</div>
+            <div style={{fontSize:13,color:"var(--text2)",marginBottom:12}}>You crushed {fullDayNames[selDay]}'s {plan.label} session 💪</div>
+            <button className="btn-primary" onClick={()=>{completeTask({id:`day${dayIdx}`,name:viewW.focus,coins:viewW.exercises.length*10});}}>
+              🪙 Claim +{viewW.exercises.length*10} Coins
             </button>
           </div>
         )}
@@ -1752,7 +1744,7 @@ export default function App() {
         </div>
         <div className="profile-hero" style={{textAlign:"left"}}>
           <div style={{display:"flex",gap:16,alignItems:"center"}}>
-            <div className="profile-avatar-lg" style={{overflow:"hidden",padding:0}}>{cu.photo?<img src={cu.photo} alt={cu.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:20}}/>:(cu.gender==="Female"?"👩":"👨")}</div>
+            <div className="profile-avatar-lg">{cu.gender==="Female"?"👩":"👨"}</div>
             <div><div className="profile-name">{cu.name}</div><div className="profile-sub">{cu.plan} Plan</div><div className="row mt-8"><span className="tag tag-green">{cu.goal}</span><span className="text-xs text-muted">{cu.activity} Activity</span></div></div>
           </div>
         </div>
@@ -1782,67 +1774,233 @@ export default function App() {
   };
 
   const SettingsSection = () => {
-    const [editUpi, setEditUpi] = useState(false);
-    const [upiInput, setUpiInput] = useState(gymUpiId);
-    const saveUpi = async () => {
-      if (!upiInput.trim()) { showToast("❌ UPI ID cannot be empty"); return; }
-      await setDoc(doc(db, "settings", "gym"), { upiId: upiInput.trim() });
-      setGymUpiId(upiInput.trim());
-      setEditUpi(false);
-      showToast("✅ UPI ID updated!");
+    const [settingsTab, setSettingsTab] = useState("general");
+    const [editingWA, setEditingWA] = useState(false);
+    const [waDraft, setWaDraft] = useState({...whatsappConfig});
+    const [testPhone, setTestPhone] = useState("");
+    const [testLoading, setTestLoading] = useState(false);
+
+    const statusColor = {sent:"#25D366", failed:"var(--danger)", error:"var(--danger)", skipped:"var(--warning)"};
+    const statusIcon  = {sent:"✅", failed:"❌", error:"💥", skipped:"⏭️"};
+
+    const sendTestMsg = async () => {
+      if (!testPhone || testPhone.length !== 10) { showToast("❌ Enter valid 10-digit number"); return; }
+      setTestLoading(true);
+      const fakeM = {
+        name:"Test Member", username:"test123", password:"test@123", phone:testPhone,
+        plan:"Premium", fees:2999,
+        joinDate:new Date().toISOString().split("T")[0],
+        dueDate:new Date(Date.now()+30*24*60*60*1000).toISOString().split("T")[0],
+      };
+      await sendWhatsAppWelcome(fakeM);
+      setTestLoading(false);
+      showToast("📲 Test message triggered — check logs below");
     };
+
+    const configured = !!(whatsappConfig.accountSid && whatsappConfig.authToken);
+
     return (
-      <div>
+      <div style={{paddingBottom:24}}>
         <div style={{padding:"16px 16px 8px"}}><div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>Settings</div></div>
 
-        {/* UPI ID card for owner */}
-        {role==="owner" && (
-          <div className="card" style={{marginBottom:14}}>
-            <div className="card-title">💳 Payment Settings</div>
-            <div style={{marginBottom:8,fontSize:13,color:"var(--text2)"}}>Members will pay to this UPI ID</div>
-            {editUpi ? (
-              <div>
-                <input
-                  className="input-field"
-                  value={upiInput}
-                  onChange={e=>setUpiInput(e.target.value)}
-                  placeholder="e.g. yourname@okaxis or 9876543210@ybl"
-                  style={{marginBottom:10}}
-                />
-                <div style={{display:"flex",gap:8}}>
-                  <button className="btn-success" style={{flex:1,padding:"10px"}} onClick={saveUpi}>✅ Save</button>
-                  <button className="btn-secondary" style={{flex:1}} onClick={()=>{setEditUpi(false);setUpiInput(gymUpiId);}}>Cancel</button>
-                </div>
+        {/* Tab strip */}
+        <div style={{display:"flex",gap:8,padding:"0 16px 14px",overflowX:"auto",scrollbarWidth:"none"}}>
+          {(role==="owner"
+            ? [{id:"general",l:"⚙️ General"},{id:"whatsapp",l:"📱 WhatsApp"},{id:"logs",l:"📋 Logs"}]
+            : [{id:"general",l:"⚙️ General"}]
+          ).map(t=>(
+            <button key={t.id} onClick={()=>setSettingsTab(t.id)} style={{
+              padding:"8px 16px",borderRadius:20,
+              border:`1px solid ${settingsTab===t.id?"var(--neon)":"var(--border)"}`,
+              background:settingsTab===t.id?"rgba(0,255,136,0.1)":"var(--card)",
+              color:settingsTab===t.id?"var(--neon)":"var(--text2)",
+              fontFamily:"Exo 2,sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",
+              transition:"all 0.2s",
+            }}>{t.l}</button>
+          ))}
+        </div>
+
+        {/* ── General tab ── */}
+        {settingsTab==="general"&&(
+          <>
+            <div className="card">
+              {role==="owner"&&<div className="info-row"><span className="info-key">UPI ID</span><span className="info-val text-neon">{OWNER.upiId}</span></div>}
+              <div className="info-row"><span className="info-key">Account</span><span className="info-val">{user.name}</span></div>
+              <div className="info-row"><span className="info-key">Role</span><span className="info-val">{role==="owner"?"👑 Owner":"👤 Member"}</span></div>
+              <div className="info-row"><span className="info-key">Database</span><span className="info-val" style={{color:"var(--neon)"}}>🟢 Firebase</span></div>
+              <div className="info-row"><span className="info-key">WhatsApp</span>
+                <span style={{fontSize:12,fontWeight:700,color:configured?"#25D366":"var(--warning)"}}>{configured?"🟢 Active":"🟡 Not configured"}</span>
               </div>
-            ) : (
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:12,padding:"12px 14px",border:"1px solid var(--border)"}}>
-                <div>
-                  <div style={{fontSize:11,color:"var(--text3)",marginBottom:3}}>CURRENT UPI ID</div>
-                  <div style={{fontSize:16,fontWeight:700,color:"var(--neon)",letterSpacing:0.5}}>{gymUpiId}</div>
+              <div className="info-row"><span className="info-key">Theme</span><span className="info-val">🌙 Dark</span></div>
+            </div>
+            <div className="card">
+              <div className="card-title">🔔 Notifications</div>
+              {["Payment Reminders","Workout Alerts","Streak Notifications","WhatsApp Welcome"].map(n=>(
+                <div key={n} className="info-row"><span className="info-key">{n}</span>
+                  <div style={{width:36,height:20,background:"var(--neon)",borderRadius:10,position:"relative",cursor:"pointer"}}>
+                    <div style={{position:"absolute",right:2,top:2,width:16,height:16,background:"#000",borderRadius:"50%"}}/>
+                  </div>
                 </div>
-                <button className="btn-secondary" onClick={()=>setEditUpi(true)}>✏️ Edit</button>
+              ))}
+            </div>
+            <div style={{padding:"0 16px"}}><button className="btn-danger" style={{width:"100%",padding:"14px",fontSize:15}} onClick={handleLogout}>🚪 Logout</button></div>
+          </>
+        )}
+
+        {/* ── WhatsApp Config tab ── */}
+        {settingsTab==="whatsapp"&&role==="owner"&&(
+          <div>
+            {/* Status/Guide banner */}
+            <div style={{margin:"0 16px 14px",background:configured?"linear-gradient(135deg,#075e54,#128c7e)":"linear-gradient(135deg,#1a1a24,#0a0a0f)",border:`1px solid ${configured?"#25D366":"var(--border)"}`,borderRadius:18,padding:16}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:configured?0:8}}>
+                <div style={{fontSize:28}}>📲</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:configured?"#fff":"var(--text)"}}>WhatsApp Notifications</div>
+                  <div style={{fontSize:12,color:configured?"rgba(255,255,255,0.8)":"var(--text2)"}}>{configured?"Connected via Twilio — auto-messages enabled":"Not configured — members won't receive welcome messages"}</div>
+                </div>
+                <div style={{background:configured?"#25D366":"var(--warning)",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"#000",flexShrink:0}}>{configured?"ACTIVE":"SETUP"}</div>
+              </div>
+              {!configured&&(
+                <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.75,padding:"12px 0 0",borderTop:"1px solid var(--border)",marginTop:10}}>
+                  <div style={{fontWeight:700,color:"var(--neon)",marginBottom:6,fontSize:13}}>📋 Setup Guide (FREE Twilio Trial):</div>
+                  <div>1️⃣  Sign up free at <strong style={{color:"var(--neon2)"}}>twilio.com</strong></div>
+                  <div>2️⃣  Go to <strong>Messaging → Try it out → Send a WhatsApp message</strong></div>
+                  <div>3️⃣  Member must join Twilio sandbox first (one-time)</div>
+                  <div>4️⃣  Copy your <strong>Account SID</strong> &amp; <strong>Auth Token</strong> from dashboard</div>
+                  <div>5️⃣  Enter them below and save ✅</div>
+                </div>
+              )}
+            </div>
+
+            {/* Credentials form */}
+            <div className="card">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                <div className="card-title" style={{margin:0}}>🔐 Twilio Credentials</div>
+                {!editingWA&&<button className="btn-secondary" style={{fontSize:12,padding:"6px 12px"}} onClick={()=>{setWaDraft({...whatsappConfig});setEditingWA(true);}}>✏️ Edit</button>}
+              </div>
+              {editingWA ? (
+                <div>
+                  {[
+                    {k:"accountSid",l:"Account SID",ph:"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",tp:"text"},
+                    {k:"authToken", l:"Auth Token", ph:"Your Twilio Auth Token",tp:"password"},
+                    {k:"fromNumber",l:"From Number (Sandbox default)",ph:"whatsapp:+14155238886",tp:"text"},
+                  ].map(({k,l,ph,tp})=>(
+                    <div key={k} className="input-group">
+                      <label className="input-label">{l}</label>
+                      <input className="input-field" placeholder={ph} type={tp} value={waDraft[k]} onChange={e=>setWaDraft(p=>({...p,[k]:e.target.value}))}/>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",gap:8,marginTop:4}}>
+                    <button className="btn-primary" style={{flex:1}} onClick={()=>{setWhatsappConfig({...waDraft});setEditingWA(false);showToast("✅ WhatsApp config saved!");}}>💾 Save Config</button>
+                    <button className="btn-secondary" style={{flex:1}} onClick={()=>setEditingWA(false)}>Cancel</button>
+                  </div>
+                </div>
+              ):(
+                <div>
+                  <div className="info-row"><span className="info-key">Account SID</span><span className="info-val">{whatsappConfig.accountSid?`AC...${whatsappConfig.accountSid.slice(-6)}`:"❌ Not set"}</span></div>
+                  <div className="info-row"><span className="info-key">Auth Token</span><span className="info-val">{whatsappConfig.authToken?"••••••••••••":"❌ Not set"}</span></div>
+                  <div className="info-row"><span className="info-key">From Number</span><span className="info-val" style={{fontSize:11}}>{whatsappConfig.fromNumber}</span></div>
+                </div>
+              )}
+            </div>
+
+            {/* Message Template Preview */}
+            <div className="card">
+              <div className="card-title">📋 Message Template Preview</div>
+              <div style={{background:"#0b2027",border:"1px solid #25D36633",borderRadius:14,padding:14,fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.9,fontFamily:"monospace"}}>
+                🏋️ <strong>Welcome to Crossfit Gym!</strong><br/><br/>
+                Hello <span style={{color:"#25D366"}}>*[Member Name]*</span>, your membership is active! 🎉<br/><br/>
+                ━━━━━━━━━━━━━━━━<br/>
+                📋 <strong>MEMBERSHIP DETAILS</strong><br/>
+                ━━━━━━━━━━━━━━━━<br/>
+                📅 Joining: <span style={{color:"#25D366"}}>*[Join Date]*</span><br/>
+                💎 Plan: <span style={{color:"#25D366"}}>*[Plan]*</span><br/>
+                💰 Fee: ₹<span style={{color:"#25D366"}}>*[Fees]*</span>/mo<br/>
+                📆 Next Payment: <span style={{color:"#25D366"}}>*[Due Date]*</span><br/><br/>
+                ━━━━━━━━━━━━━━━━<br/>
+                🔐 <strong>YOUR LOGIN</strong><br/>
+                ━━━━━━━━━━━━━━━━<br/>
+                👤 Username: <span style={{color:"#25D366"}}>*[Username]*</span><br/>
+                🔑 Password: <span style={{color:"#25D366"}}>*[Password]*</span><br/><br/>
+                💪 Stay consistent, stay strong!
+              </div>
+            </div>
+
+            {/* Test message sender */}
+            {configured&&(
+              <div className="card">
+                <div className="card-title">🧪 Send Test Message</div>
+                <div style={{fontSize:12,color:"var(--text2)",marginBottom:12}}>Send a sample message to verify your Twilio setup is working</div>
+                <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+                  <div style={{flex:1}}>
+                    <label className="input-label">📱 Test Number (+91)</label>
+                    <input className="input-field" placeholder="10-digit number" maxLength={10} type="tel" value={testPhone} onChange={e=>setTestPhone(e.target.value.replace(/[^0-9]/g,""))}/>
+                  </div>
+                  <button onClick={sendTestMsg} disabled={testLoading} style={{padding:"14px 16px",background:testLoading?"var(--bg3)":"linear-gradient(135deg,#075e54,#128c7e)",border:`1px solid ${testLoading?"var(--border)":"#25D366"}`,borderRadius:12,color:testLoading?"var(--text3)":"#fff",fontFamily:"Rajdhani,sans-serif",fontSize:14,fontWeight:700,cursor:testLoading?"not-allowed":"pointer",transition:"all 0.2s"}}>
+                    {testLoading?"⏳ Sending…":"📲 Send Test"}
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <div className="card">
-          <div className="info-row"><span className="info-key">Account</span><span className="info-val">{user.name}</span></div>
-          <div className="info-row"><span className="info-key">Role</span><span className="info-val">{role==="owner"?"👑 Owner":"👤 Member"}</span></div>
-          <div className="info-row"><span className="info-key">Database</span><span className="info-val" style={{color:"var(--neon)"}}>🟢 Firebase</span></div>
-          <div className="info-row"><span className="info-key">Theme</span><span className="info-val">🌑 Dark</span></div>
-        </div>
-        <div className="card">
-          <div className="card-title">🔔 Notifications</div>
-          {["Payment Reminders","Workout Alerts","Streak Notifications","AI Plan Updates"].map(n=>(
-            <div key={n} className="info-row"><span className="info-key">{n}</span><div style={{width:36,height:20,background:"var(--neon)",borderRadius:10,position:"relative",cursor:"pointer"}}><div style={{position:"absolute",right:2,top:2,width:16,height:16,background:"#000",borderRadius:"50%"}}/></div></div>
-          ))}
-        </div>
-        <div style={{padding:"0 16px"}}><button className="btn-danger" style={{width:"100%",padding:"14px",fontSize:15}} onClick={handleLogout}>🚪 Logout</button></div>
+        {/* ── Delivery Logs tab ── */}
+        {settingsTab==="logs"&&role==="owner"&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px 12px"}}>
+              <div>
+                <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700}}>WhatsApp Delivery Log</div>
+                <div style={{fontSize:12,color:"var(--text2)"}}>{whatsappLogs.length} messages tracked</div>
+              </div>
+              {whatsappLogs.length>0&&<button className="btn-secondary" style={{fontSize:11,padding:"5px 10px"}} onClick={()=>setWhatsappLogs([])}>🗑️ Clear</button>}
+            </div>
+
+            {/* Summary stats */}
+            {whatsappLogs.length>0&&(
+              <div style={{display:"flex",gap:8,padding:"0 16px 12px"}}>
+                {[
+                  {label:"Sent",    count:whatsappLogs.filter(l=>l.status==="sent").length,    color:"#25D366"},
+                  {label:"Failed",  count:whatsappLogs.filter(l=>l.status==="failed"||l.status==="error").length, color:"var(--danger)"},
+                  {label:"Skipped", count:whatsappLogs.filter(l=>l.status==="skipped").length, color:"var(--warning)"},
+                ].map(s=>(
+                  <div key={s.label} style={{flex:1,background:"var(--card)",border:`1px solid ${s.color}33`,borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
+                    <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,color:s.color}}>{s.count}</div>
+                    <div style={{fontSize:10,color:"var(--text2)"}}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {whatsappLogs.length===0 ? (
+              <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
+                <div style={{fontSize:40,marginBottom:12}}>📭</div>
+                <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,marginBottom:6}}>No Messages Yet</div>
+                <div style={{fontSize:13,color:"var(--text2)"}}>Add a member to see delivery logs here</div>
+              </div>
+            ):(
+              <div style={{padding:"0 16px",display:"flex",flexDirection:"column",gap:8}}>
+                {whatsappLogs.map(log=>(
+                  <div key={log.id} style={{background:"var(--card)",border:`1px solid ${(statusColor[log.status]||"var(--border)")}22`,borderLeft:`3px solid ${statusColor[log.status]||"var(--border)"}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"flex-start",gap:12}}>
+                    <div style={{fontSize:22,flexShrink:0,lineHeight:1}}>{statusIcon[log.status]||"•"}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                        <div style={{fontFamily:"Rajdhani",fontSize:15,fontWeight:700,color:"var(--text)"}}>{log.member}</div>
+                        <div style={{background:`${statusColor[log.status]||"var(--border)"}20`,border:`1px solid ${statusColor[log.status]||"var(--border)"}40`,borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:700,color:statusColor[log.status]||"var(--text2)"}}>{log.status.toUpperCase()}</div>
+                      </div>
+                      <div style={{fontSize:11,color:"var(--text2)",marginBottom:2}}>📱 +91 {log.phone}&nbsp;&nbsp;🕐 {log.time}</div>
+                      {log.sid&&<div style={{fontSize:10,color:"var(--text3)"}}>SID: {log.sid}</div>}
+                      {log.reason&&<div style={{fontSize:11,color:"var(--warning)",marginTop:3}}>ℹ️ {log.reason}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
-
   // ── Modals ──
   const renderModal = () => {
     if (!modal) return null;
@@ -1854,7 +2012,7 @@ export default function App() {
             <div className="modal-handle"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
               <div style={{display:"flex",gap:12,alignItems:"center"}}>
-                <div className="member-avatar" style={{width:56,height:56,fontSize:28,overflow:"hidden",padding:0}}>{m.photo?<img src={m.photo} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:12}}/>:(m.gender==="Female"?"👩":"👨")}</div>
+                <div className="member-avatar" style={{width:56,height:56,fontSize:28}}>{m.gender==="Female"?"👩":"👨"}</div>
                 <div><div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>{m.name}</div><div className="text-sm text-muted">@{m.username}</div></div>
               </div>
               <span className={`badge-status badge-${(m.status||"unpaid").toLowerCase()}`}>{m.status}</span>
@@ -1875,149 +2033,72 @@ export default function App() {
       );
     }
     if (modal==="addMember") return (
-      <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget){setModal(null);setNewMemberPhoto(null);setNewMemberFeePaid(false);}}}>
+      <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
         <div className="modal-sheet">
           <div className="modal-handle"/>
-          <div className="modal-title">Add New Member</div>
+          <div className="modal-title">➕ Add New Member</div>
 
-          {/* ── Photo Picker ── */}
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:20}}>
-            <div style={{
-              width:90,height:90,borderRadius:22,
-              background: newMemberPhoto ? "transparent" : "linear-gradient(135deg,var(--bg3),var(--card2))",
-              border:`2px dashed ${newMemberPhoto?"var(--neon)":"var(--border)"}`,
-              display:"flex",alignItems:"center",justifyContent:"center",
-              overflow:"hidden",marginBottom:12,position:"relative",
-              boxShadow: newMemberPhoto?"0 0 16px rgba(0,255,136,0.3)":"none",
-              transition:"all 0.3s",
-            }}>
-              {newMemberPhoto
-                ? <img src={newMemberPhoto} alt="member" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                : <span style={{fontSize:36}}>👤</span>
-              }
-              {newMemberPhoto && (
-                <div onClick={()=>setNewMemberPhoto(null)} style={{position:"absolute",top:4,right:4,width:20,height:20,background:"var(--danger)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,fontWeight:700,color:"#fff"}}>✕</div>
-              )}
+          {/* Basic fields */}
+          {[
+            {f:"name",    label:"Full Name",    icon:"👤", type:"text",     ph:"e.g. Rahul Sharma"},
+            {f:"username",label:"Username",     icon:"🔖", type:"text",     ph:"e.g. rahul123"},
+            {f:"password",label:"Password",     icon:"🔑", type:"password", ph:"Min 6 characters"},
+          ].map(({f,label,icon,type,ph})=>(
+            <div key={f} className="input-group">
+              <label className="input-label">{icon} {label}</label>
+              <input className="input-field" placeholder={ph} type={type} value={newMember[f]} onChange={e=>setNewMember(p=>({...p,[f]:e.target.value}))}/>
             </div>
-            <div style={{fontSize:12,color:"var(--text2)",marginBottom:10}}>{newMemberPhoto?"Photo added ✓":"Add member photo (optional)"}</div>
-            <div style={{display:"flex",gap:10}}>
-              {/* Camera */}
-              <label style={{
-                display:"flex",alignItems:"center",gap:6,
-                padding:"9px 16px",borderRadius:10,cursor:"pointer",
-                background:"rgba(0,212,255,0.1)",border:"1px solid rgba(0,212,255,0.3)",
-                color:"var(--neon2)",fontSize:13,fontWeight:600,transition:"all 0.2s",
-              }}>
-                <span style={{fontSize:16}}>📷</span> Camera
-                <input type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>{
-                  const file=e.target.files?.[0];
-                  if(!file)return;
-                  const reader=new FileReader();
-                  reader.onload=ev=>setNewMemberPhoto(ev.target.result);
-                  reader.readAsDataURL(file);
-                  e.target.value="";
-                }}/>
-              </label>
-              {/* Gallery */}
-              <label style={{
-                display:"flex",alignItems:"center",gap:6,
-                padding:"9px 16px",borderRadius:10,cursor:"pointer",
-                background:"rgba(0,255,136,0.1)",border:"1px solid rgba(0,255,136,0.3)",
-                color:"var(--neon)",fontSize:13,fontWeight:600,transition:"all 0.2s",
-              }}>
-                <span style={{fontSize:16}}>🖼️</span> Gallery
-                <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
-                  const file=e.target.files?.[0];
-                  if(!file)return;
-                  const reader=new FileReader();
-                  reader.onload=ev=>setNewMemberPhoto(ev.target.result);
-                  reader.readAsDataURL(file);
-                  e.target.value="";
-                }}/>
-              </label>
-            </div>
-          </div>
-
-          {["name","username","password"].map(f=>(
-            <div key={f} className="input-group"><label className="input-label">{f.charAt(0).toUpperCase()+f.slice(1)}</label><input className="input-field" placeholder={`Enter ${f}`} type={f==="password"?"password":"text"} value={newMember[f]} onChange={e=>setNewMember(p=>({...p,[f]:e.target.value}))}/></div>
           ))}
-          <div className="two-col">
-            <div className="input-group" style={{margin:0}}><label className="input-label">Plan</label><select className="input-field" value={newMember.plan} onChange={e=>setNewMember(p=>({...p,plan:e.target.value}))}><option>Basic</option><option>Premium</option></select></div>
-            <div className="input-group" style={{margin:0}}><label className="input-label">Monthly Fee</label><input className="input-field" value={newMember.fees} onChange={e=>setNewMember(p=>({...p,fees:e.target.value}))}/></div>
-          </div>
 
-          {/* ── Fee Paid Toggle ── */}
-          <div style={{
-            marginTop:18,padding:"16px",
-            background: newMemberFeePaid ? "rgba(0,255,136,0.07)" : "rgba(255,68,68,0.06)",
-            border: `1px solid ${newMemberFeePaid ? "rgba(0,255,136,0.3)" : "rgba(255,68,68,0.25)"}`,
-            borderRadius:16, transition:"all 0.4s",
-          }}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:3}}>
-                  {newMemberFeePaid ? "💰 Fee Paid This Month" : "⏳ Fee Pending"}
-                </div>
-                <div style={{fontSize:11,color:"var(--text2)"}}>
-                  {newMemberFeePaid
-                    ? `₹${newMember.fees} — recorded as paid today`
-                    : "Will be saved as unpaid / due today"}
-                </div>
-              </div>
-              {/* Slider toggle */}
-              <div
-                onClick={()=>setNewMemberFeePaid(p=>!p)}
-                style={{
-                  width:54,height:28,borderRadius:14,cursor:"pointer",
-                  background: newMemberFeePaid ? "var(--neon)" : "var(--bg3)",
-                  border: `2px solid ${newMemberFeePaid ? "var(--neon)" : "var(--border)"}`,
-                  position:"relative",transition:"all 0.35s",flexShrink:0,
-                  boxShadow: newMemberFeePaid ? "0 0 14px rgba(0,255,136,0.5)" : "none",
-                }}
-              >
-                <div style={{
-                  position:"absolute",
-                  top:2,
-                  left: newMemberFeePaid ? "calc(100% - 22px)" : "2px",
-                  width:20,height:20,borderRadius:"50%",
-                  background: newMemberFeePaid ? "#000" : "var(--text3)",
-                  transition:"left 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-                  boxShadow:"0 1px 4px rgba(0,0,0,0.4)",
-                }}/>
-              </div>
+          {/* Phone field with WhatsApp indicator */}
+          <div className="input-group">
+            <label className="input-label">📱 Mobile Number <span style={{color:"#25D366",fontSize:10,fontWeight:700,marginLeft:4}}>● WhatsApp</span></label>
+            <div style={{position:"relative"}}>
+              <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text2)",fontWeight:600}}>+91</span>
+              <input className="input-field" placeholder="10-digit mobile number" type="tel" maxLength={10}
+                style={{paddingLeft:46}}
+                value={newMember.phone} onChange={e=>setNewMember(p=>({...p,phone:e.target.value.replace(/\D/g,"")}))}/>
             </div>
-
-            {/* Status badge preview */}
-            <div style={{marginTop:12,display:"flex",alignItems:"center",gap:8}}>
-              <div style={{fontSize:11,color:"var(--text3)"}}>Status preview:</div>
-              <div style={{
-                padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,letterSpacing:0.5,
-                background: newMemberFeePaid ? "rgba(0,255,136,0.15)" : "rgba(255,68,68,0.15)",
-                color: newMemberFeePaid ? "var(--neon)" : "var(--danger)",
-                border: `1px solid ${newMemberFeePaid ? "rgba(0,255,136,0.3)" : "rgba(255,68,68,0.3)"}`,
-                transition:"all 0.3s",
-              }}>
-                {newMemberFeePaid ? "✓ PAID" : "⚠ UNPAID"}
-              </div>
-              {newMemberFeePaid && (
-                <div style={{fontSize:11,color:"var(--text2)"}}>
-                  Next due in 1 month
-                </div>
-              )}
+            <div style={{fontSize:10,color:"#25D366",marginTop:4,display:"flex",alignItems:"center",gap:4}}>
+              <span>📲</span>
+              {whatsappConfig.accountSid
+                ? "Welcome WhatsApp message will be sent automatically"
+                : "⚙️ Configure Twilio in Settings → WhatsApp to enable auto-message"}
             </div>
           </div>
 
-          <button className="btn-primary" disabled={addingMember} style={{
-            marginTop:16,
-            opacity: addingMember ? 0.7 : 1,
-            background: newMemberFeePaid
-              ? "linear-gradient(135deg,var(--neon),var(--neon2))"
-              : "linear-gradient(135deg,#ff6b35,#ff4444)",
-            boxShadow: newMemberFeePaid
-              ? "0 4px 20px rgba(0,255,136,0.35)"
-              : "0 4px 20px rgba(255,68,68,0.3)",
-          }} onClick={addMember}>
-            {addingMember ? "⏳ Saving..." : newMemberFeePaid ? "✅ Add Member (Fee Paid)" : "➕ Add Member (Fee Pending)"}
+          <div className="two-col" style={{gap:10}}>
+            <div className="input-group" style={{margin:0}}>
+              <label className="input-label">💎 Plan</label>
+              <select className="input-field" value={newMember.plan} onChange={e=>setNewMember(p=>({...p,plan:e.target.value}))}>
+                <option>Basic</option><option>Premium</option>
+              </select>
+            </div>
+            <div className="input-group" style={{margin:0}}>
+              <label className="input-label">💰 Monthly Fee (₹)</label>
+              <input className="input-field" value={newMember.fees} onChange={e=>setNewMember(p=>({...p,fees:e.target.value}))}/>
+            </div>
+          </div>
+
+          {/* WhatsApp preview banner */}
+          {whatsappConfig.accountSid && newMember.phone && newMember.phone.length===10 && (
+            <div style={{marginTop:14,background:"linear-gradient(135deg,#075e54,#128c7e)",borderRadius:14,padding:14,border:"1px solid #25D366"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <span style={{fontSize:18}}>📲</span>
+                <div style={{fontFamily:"Rajdhani",fontSize:14,fontWeight:700,color:"#fff"}}>WhatsApp Preview</div>
+                <div style={{marginLeft:"auto",background:"#25D366",borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:700,color:"#fff"}}>LIVE</div>
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.8)",lineHeight:1.5}}>
+                Will send to <strong style={{color:"#25D366"}}>+91 {newMember.phone}</strong> →<br/>
+                🏋️ Welcome to Crossfit Gym!<br/>
+                Member: <strong>{newMember.name||"[Name]"}</strong> | Plan: <strong>{newMember.plan}</strong> | ₹{newMember.fees}/mo<br/>
+                Login: <strong>{newMember.username||"[username]"}</strong>
+              </div>
+            </div>
+          )}
+
+          <button className="btn-primary" style={{marginTop:16}} onClick={addMember}>
+            {whatsappConfig.accountSid && newMember.phone ? "➕ Add & Send WhatsApp 📱" : "➕ Add Member"}
           </button>
         </div>
       </div>
@@ -2025,8 +2106,8 @@ export default function App() {
     return null;
   };
 
-  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"analytics",icon:"📊",label:"Analytics"},{id:"aiplan",icon:"🥗",label:"Diet Plan"},{id:"settings",icon:"⚙️",label:"Settings"}];
-  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"aiplan",icon:"🥗",label:"Diet Plan"},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"analytics",icon:"📊",label:"Analytics"},{id:"aiplan",icon:"🤖",label:"AI Plans"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"aiplan",icon:"🤖",label:"AI Plan"},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
   const tabs = role==="owner"?ownerTabs:memberTabs;
 
   const renderContent = () => {
@@ -2046,7 +2127,7 @@ export default function App() {
     return null;
   };
 
-  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",aiplan:"Diet Plan",settings:"Settings",workout:"Workouts",profile:"Profile"};
+  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",aiplan:"AI Planner",settings:"Settings",workout:"Workouts",profile:"Profile"};
 
   return (
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2054,17 +2135,7 @@ export default function App() {
       <div className="app-shell">
         <div className="app-header">
           <div className="header-logo">
-            {/* Back button — shows on all screens except dashboard */}
-            {activeTab !== "dashboard" ? (
-              <div
-                className="back-btn"
-                onClick={()=>setActiveTab("dashboard")}
-              >
-                ‹
-              </div>
-            ) : (
-              <div className="header-logo-icon">🏋️</div>
-            )}
+            <div className="header-logo-icon">🏋️</div>
             <div className="header-title">{pageTitles[activeTab]||"CROSSFIT"}</div>
           </div>
           <div className="header-actions">
