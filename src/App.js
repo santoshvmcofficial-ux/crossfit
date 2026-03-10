@@ -2906,8 +2906,413 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     return null;
   };
 
-  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"analytics",icon:"📊",label:"Analytics"},{id:"aiplan",icon:"🤖",label:"AI Plans"},{id:"settings",icon:"⚙️",label:"Settings"}];
-  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"aiplan",icon:"🤖",label:"AI Plan"},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  // ══════════════════════════════════════════════════════════════════════════
+  // ATTENDANCE PAGE  — full month grid, Firebase-backed
+  // ══════════════════════════════════════════════════════════════════════════
+  const AttendancePage = () => {
+    const today      = new Date();
+    const [viewYear,  setViewYear]  = useState(today.getFullYear());
+    const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-based
+    const [attData,   setAttData]   = useState({});  // { "memberId_YYYY-MM-DD": "P"|"A" }
+    const [loading,   setLoading]   = useState(true);
+    const [saving,    setSaving]    = useState(null); // "memberId_date" being saved
+    const [search,    setSearch]    = useState("");
+    const [viewMode,  setViewMode]  = useState("grid"); // "grid" | "summary"
+
+    const MONTH_NAMES = ["January","February","March","April","May","June",
+                         "July","August","September","October","November","December"];
+
+    // Days in selected month
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const todayStr    = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+    const dayStr = (d) =>
+      `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+
+    const key = (memberId, d) => `${memberId}_${dayStr(d)}`;
+
+    // ── Load attendance from Firebase (attendance collection) ──────────────
+    useEffect(() => {
+      setLoading(true);
+      const monthPrefix = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}`;
+      const unsub = onSnapshot(collection(db, "attendance"), snap => {
+        const data = {};
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          // doc ID format:  memberId_YYYY-MM-DD
+          if (d.date && d.date.startsWith(monthPrefix)) {
+            data[`${d.memberId}_${d.date}`] = d.status;
+          }
+        });
+        setAttData(data);
+        setLoading(false);
+      });
+      return () => unsub();
+    }, [viewMonth, viewYear]);
+
+    // ── Toggle P / A ───────────────────────────────────────────────────────
+    const toggle = async (memberId, d) => {
+      if (role !== "owner") return;
+      const dateStr = dayStr(d);
+      const k       = `${memberId}_${dateStr}`;
+      const current = attData[k] || "";
+      const next    = current === "P" ? "A" : "P";
+      setSaving(k);
+      const docId = `${memberId}_${dateStr}`;
+      await setDoc(doc(db, "attendance", docId), {
+        memberId, date: dateStr, status: next,
+        updatedAt: new Date().toISOString(),
+      });
+      setSaving(null);
+    };
+
+    // ── Stats helpers ───────────────────────────────────────────────────────
+    const memberPresent = (memberId) =>
+      Array.from({length:daysInMonth},(_,i)=>i+1)
+        .filter(d => attData[key(memberId,d)] === "P").length;
+
+    const dayPresent = (d) =>
+      members.filter(m => attData[key(m.id,d)] === "P").length;
+
+    const filteredMembers = members.filter(m =>
+      m.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    // ── Month navigator ─────────────────────────────────────────────────────
+    const prevMonth = () => {
+      if (viewMonth === 0) { setViewMonth(11); setViewYear(y=>y-1); }
+      else setViewMonth(m=>m-1);
+    };
+    const nextMonth = () => {
+      if (viewMonth === 11) { setViewMonth(0); setViewYear(y=>y+1); }
+      else setViewMonth(m=>m+1);
+    };
+    const isCurrentMonth = viewMonth === today.getMonth() && viewYear === today.getFullYear();
+    const isFuture = new Date(viewYear, viewMonth) > new Date(today.getFullYear(), today.getMonth());
+
+    // ── Cell component ──────────────────────────────────────────────────────
+    const Cell = ({ memberId, d }) => {
+      const dateStr = dayStr(d);
+      const k       = `${memberId}_${dateStr}`;
+      const status  = attData[k] || "";
+      const isToday = dateStr === todayStr;
+      const isSav   = saving === k;
+      const isPast  = dateStr <= todayStr;
+      const isOwner = role === "owner";
+
+      let bg    = "transparent";
+      let color = "var(--text3)";
+      let txt   = "·";
+      if (status === "P") { bg = "rgba(0,200,80,0.18)"; color = "#00c850"; txt = "P"; }
+      if (status === "A") { bg = "rgba(255,60,60,0.15)"; color = "#ff4444"; txt = "A"; }
+
+      return (
+        <td
+          onClick={() => isOwner && isPast && toggle(memberId, d)}
+          style={{
+            width: 28, minWidth: 28, height: 32, textAlign: "center",
+            fontSize: 11, fontWeight: 700, fontFamily: "Rajdhani, sans-serif",
+            background: bg,
+            color: isSav ? "var(--text3)" : color,
+            cursor: isOwner && isPast ? "pointer" : "default",
+            border: isToday
+              ? "1px solid rgba(0,255,136,0.6)"
+              : "1px solid transparent",
+            borderRadius: 6,
+            transition: "all 0.15s",
+            position: "relative",
+            boxShadow: isToday ? "0 0 8px rgba(0,255,136,0.25)" : "none",
+          }}
+        >
+          {isSav ? "·" : txt}
+        </td>
+      );
+    };
+
+    // ── Totals stats bar ────────────────────────────────────────────────────
+    const totalPresent = Object.values(attData).filter(v=>v==="P").length;
+    const totalAbsent  = Object.values(attData).filter(v=>v==="A").length;
+    const totalMarked  = totalPresent + totalAbsent;
+    const totalCells   = members.length * daysInMonth;
+
+    return (
+      <div style={{paddingBottom:24}}>
+
+        {/* ── Header ── */}
+        <div style={{padding:"14px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+          <div>
+            <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700}}>Attendance</div>
+            <div style={{fontSize:12,color:"var(--text2)"}}>
+              {members.length} members · {MONTH_NAMES[viewMonth]} {viewYear}
+            </div>
+          </div>
+          {/* View toggle */}
+          <div style={{display:"flex",gap:6}}>
+            {["grid","summary"].map(v=>(
+              <button key={v} onClick={()=>setViewMode(v)} style={{
+                padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
+                border:`1px solid ${viewMode===v?"var(--neon)":"var(--border)"}`,
+                background:viewMode===v?"rgba(0,255,136,0.1)":"var(--card2)",
+                color:viewMode===v?"var(--neon)":"var(--text2)",transition:"all 0.2s",
+              }}>{v==="grid"?"⊞ Grid":"📊 Summary"}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Month navigator ── */}
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 16px 12px"}}>
+          <button onClick={prevMonth} style={{width:34,height:34,borderRadius:10,border:"1px solid var(--border)",background:"var(--card2)",color:"var(--text)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
+          <div style={{
+            flex:1,textAlign:"center",fontFamily:"Rajdhani",fontSize:17,fontWeight:700,
+            padding:"6px 0",borderRadius:12,
+            background:isCurrentMonth?"rgba(0,255,136,0.08)":"var(--card2)",
+            border:`1px solid ${isCurrentMonth?"rgba(0,255,136,0.3)":"var(--border)"}`,
+            color:isCurrentMonth?"var(--neon)":"var(--text)",
+          }}>
+            {MONTH_NAMES[viewMonth]} {viewYear}
+            {isCurrentMonth&&<span style={{fontSize:10,marginLeft:6,color:"var(--neon)",opacity:0.7}}>● TODAY</span>}
+          </div>
+          <button onClick={nextMonth} style={{width:34,height:34,borderRadius:10,border:"1px solid var(--border)",background:"var(--card2)",color:"var(--text)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
+        </div>
+
+        {/* ── Stats strip ── */}
+        <div style={{display:"flex",gap:8,padding:"0 16px 12px"}}>
+          {[
+            {label:"Present",  val:totalPresent, color:"#00c850", bg:"rgba(0,200,80,0.1)"},
+            {label:"Absent",   val:totalAbsent,  color:"#ff4444", bg:"rgba(255,68,68,0.1)"},
+            {label:"Unmarked", val:totalCells-totalMarked, color:"var(--text3)", bg:"var(--card2)"},
+            {label:"Coverage", val:`${totalCells?Math.round((totalMarked/totalCells)*100):0}%`, color:"var(--neon)", bg:"rgba(0,255,136,0.08)"},
+          ].map(s=>(
+            <div key={s.label} style={{flex:1,background:s.bg,border:`1px solid ${s.color}33`,borderRadius:12,padding:"8px 4px",textAlign:"center"}}>
+              <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:s.color}}>{s.val}</div>
+              <div style={{fontSize:9,color:"var(--text3)",fontWeight:600}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Search ── */}
+        <div style={{padding:"0 16px 10px"}}>
+          <input
+            className="input-field"
+            placeholder="🔍 Search member..."
+            value={search}
+            onChange={e=>setSearch(e.target.value)}
+            style={{margin:0}}
+          />
+        </div>
+
+        {/* Legend */}
+        <div style={{display:"flex",gap:12,padding:"0 16px 10px",alignItems:"center"}}>
+          <div style={{fontSize:11,color:"var(--text3)",fontWeight:600}}>Legend:</div>
+          {[
+            {s:"P", color:"#00c850", bg:"rgba(0,200,80,0.18)", label:"Present"},
+            {s:"A", color:"#ff4444", bg:"rgba(255,60,60,0.15)", label:"Absent"},
+            {s:"·", color:"var(--text3)", bg:"transparent", label:"Not marked"},
+          ].map(l=>(
+            <div key={l.s} style={{display:"flex",alignItems:"center",gap:4}}>
+              <div style={{width:20,height:20,background:l.bg,border:"1px solid var(--border)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:l.color}}>{l.s}</div>
+              <span style={{fontSize:10,color:"var(--text3)"}}>{l.label}</span>
+            </div>
+          ))}
+          {role==="owner"&&<div style={{fontSize:10,color:"var(--text3)",marginLeft:"auto"}}>Tap cell to toggle</div>}
+        </div>
+
+        {/* ── GRID VIEW ── */}
+        {viewMode==="grid"&&(
+          <div style={{padding:"0 16px"}}>
+            {loading ? (
+              <div style={{textAlign:"center",padding:"40px 0"}}>
+                <div className="spinner"/>
+                <div style={{fontSize:13,color:"var(--text2)",marginTop:8}}>Loading attendance…</div>
+              </div>
+            ) : filteredMembers.length === 0 ? (
+              <div style={{textAlign:"center",padding:40}}>
+                <div style={{fontSize:36,marginBottom:10}}>🔍</div>
+                <div style={{fontSize:14,color:"var(--text2)"}}>No members match your search</div>
+              </div>
+            ) : (
+              <div style={{
+                background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,
+                overflow:"hidden",
+              }}>
+                <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+                  <table style={{borderCollapse:"separate",borderSpacing:"2px",width:"max-content",minWidth:"100%",padding:8}}>
+                    <thead>
+                      <tr>
+                        {/* Name header */}
+                        <th style={{
+                          position:"sticky",left:0,zIndex:10,
+                          background:"var(--bg2)",
+                          padding:"8px 10px",textAlign:"left",
+                          fontSize:11,fontWeight:700,color:"var(--text3)",
+                          letterSpacing:1,whiteSpace:"nowrap",
+                          minWidth:110,borderRadius:8,
+                        }}>MEMBER</th>
+                        {/* Day headers 1–daysInMonth */}
+                        {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
+                          const ds = dayStr(d);
+                          const isT = ds === todayStr;
+                          const dow = new Date(viewYear, viewMonth, d).getDay();
+                          const isSun = dow === 0;
+                          const isSat = dow === 6;
+                          return (
+                            <th key={d} style={{
+                              width:28,minWidth:28,textAlign:"center",
+                              fontSize:10,fontWeight:700,padding:"4px 0",
+                              color: isT ? "var(--neon)" : (isSun||isSat) ? "var(--warning)" : "var(--text3)",
+                              background: isT ? "rgba(0,255,136,0.08)" : "transparent",
+                              borderRadius:6,
+                              boxShadow: isT ? "0 0 6px rgba(0,255,136,0.2)" : "none",
+                            }}>
+                              {d}
+                            </th>
+                          );
+                        })}
+                        {/* Total header */}
+                        <th style={{fontSize:10,fontWeight:700,color:"var(--neon)",textAlign:"center",padding:"4px 6px",whiteSpace:"nowrap"}}>P/Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMembers.map((m,mi)=>{
+                        const pCount = memberPresent(m.id);
+                        const pct    = Math.round((pCount/daysInMonth)*100);
+                        return (
+                          <tr key={m.id} style={{background:mi%2===0?"rgba(255,255,255,0.01)":"transparent"}}>
+                            {/* Sticky name cell */}
+                            <td style={{
+                              position:"sticky",left:0,zIndex:5,
+                              background: mi%2===0 ? "var(--bg2)" : "var(--bg)",
+                              padding:"6px 10px",whiteSpace:"nowrap",
+                              fontSize:12,fontWeight:700,color:"var(--text)",
+                              borderRadius:8,
+                            }}>
+                              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                                <div style={{
+                                  width:22,height:22,borderRadius:"50%",overflow:"hidden",
+                                  background:"var(--card2)",flexShrink:0,
+                                  display:"flex",alignItems:"center",justifyContent:"center",
+                                  fontSize:12,
+                                }}>
+                                  {m.photo
+                                    ? <img src={m.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                                    : (m.gender==="Female"?"👩":"👨")
+                                  }
+                                </div>
+                                <span style={{maxWidth:80,overflow:"hidden",textOverflow:"ellipsis"}}>{m.name.split(" ")[0]}</span>
+                              </div>
+                            </td>
+                            {/* Day cells */}
+                            {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>(
+                              <Cell key={d} memberId={m.id} d={d}/>
+                            ))}
+                            {/* Total */}
+                            <td style={{textAlign:"center",padding:"0 6px",whiteSpace:"nowrap"}}>
+                              <div style={{
+                                fontSize:11,fontWeight:700,
+                                color: pct>=80?"#00c850" : pct>=50?"var(--warning)":"#ff4444",
+                              }}>{pCount}<span style={{fontSize:9,color:"var(--text3)",fontWeight:400}}>/{daysInMonth}</span></div>
+                              <div style={{
+                                width:30,height:3,background:"var(--bg3)",borderRadius:2,margin:"2px auto 0",overflow:"hidden",
+                              }}>
+                                <div style={{
+                                  height:"100%",borderRadius:2,
+                                  background: pct>=80?"#00c850" : pct>=50?"var(--warning)":"#ff4444",
+                                  width:`${pct}%`,transition:"width 0.5s",
+                                }}/>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {/* Day total row */}
+                      <tr style={{borderTop:"1px solid var(--border)"}}>
+                        <td style={{
+                          position:"sticky",left:0,zIndex:5,
+                          background:"var(--bg2)",
+                          padding:"6px 10px",
+                          fontSize:10,fontWeight:700,color:"var(--neon)",whiteSpace:"nowrap",
+                          borderRadius:8,
+                        }}>📊 Present</td>
+                        {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
+                          const cnt  = dayPresent(d);
+                          const pct  = members.length ? cnt/members.length : 0;
+                          return (
+                            <td key={d} style={{textAlign:"center",padding:"4px 0"}}>
+                              <div style={{
+                                fontSize:10,fontWeight:700,
+                                color: pct>=0.8?"#00c850" : pct>=0.5?"var(--warning)" : cnt>0?"#ff4444":"var(--text3)",
+                              }}>{cnt||""}</div>
+                            </td>
+                          );
+                        })}
+                        <td/>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SUMMARY VIEW ── */}
+        {viewMode==="summary"&&(
+          <div style={{padding:"0 16px",display:"flex",flexDirection:"column",gap:10}}>
+            {loading ? (
+              <div style={{textAlign:"center",padding:"40px 0"}}><div className="spinner"/></div>
+            ) : filteredMembers.map(m=>{
+              const pCount = memberPresent(m.id);
+              const aCount = Array.from({length:daysInMonth},(_,i)=>i+1)
+                .filter(d=>attData[key(m.id,d)]==="A").length;
+              const marked  = pCount + aCount;
+              const pct     = daysInMonth ? Math.round((pCount/daysInMonth)*100) : 0;
+              return (
+                <div key={m.id} style={{
+                  background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:"14px 16px",
+                  display:"flex",alignItems:"center",gap:12,
+                }}>
+                  <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",background:"var(--card2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>
+                    {m.photo ? <img src={m.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (m.gender==="Female"?"👩":"👨")}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:"Rajdhani",fontSize:15,fontWeight:700,color:"var(--text)",marginBottom:4}}>{m.name}</div>
+                    <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>
+                      <span style={{fontSize:10,fontWeight:700,color:"#00c850",background:"rgba(0,200,80,0.12)",borderRadius:6,padding:"2px 7px"}}>✅ {pCount}P</span>
+                      <span style={{fontSize:10,fontWeight:700,color:"#ff4444",background:"rgba(255,68,68,0.1)",borderRadius:6,padding:"2px 7px"}}>❌ {aCount}A</span>
+                      <span style={{fontSize:10,fontWeight:700,color:"var(--text3)",background:"var(--bg3)",borderRadius:6,padding:"2px 7px"}}>· {daysInMonth-marked} unmarked</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{flex:1,height:5,background:"var(--bg3)",borderRadius:3,overflow:"hidden"}}>
+                        <div style={{
+                          height:"100%",borderRadius:3,transition:"width 0.5s",
+                          background: pct>=80?"linear-gradient(90deg,#00c850,#00ff88)" : pct>=50?"linear-gradient(90deg,var(--warning),#ffaa00)":"linear-gradient(90deg,#ff4444,#cc0000)",
+                          width:`${pct}%`,
+                        }}/>
+                      </div>
+                      <span style={{fontSize:12,fontWeight:700,color:pct>=80?"#00c850":pct>=50?"var(--warning)":"#ff4444",flexShrink:0}}>{pct}%</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Owner hint */}
+        {role==="owner"&&!isFuture&&(
+          <div style={{margin:"14px 16px 0",background:"rgba(0,255,136,0.04)",border:"1px solid rgba(0,255,136,0.15)",borderRadius:12,padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}>
+            <span style={{fontSize:14}}>💡</span>
+            <span style={{fontSize:11,color:"var(--text2)"}}>
+              Tap any cell to toggle between <strong style={{color:"#00c850"}}>Present (P)</strong> and <strong style={{color:"#ff4444"}}>Absent (A)</strong>. Today's column is highlighted in green.
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const ownerTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"members",icon:"👥",label:"Members"},{id:"attendance",icon:"📋",label:"Attend."},{id:"aiplan",icon:"🥗",label:"Diet Plan"},{id:"settings",icon:"⚙️",label:"Settings"}];
+  const memberTabs = [{id:"dashboard",icon:"🏠",label:"Home"},{id:"workout",icon:"💪",label:"Workout"},{id:"attendance",icon:"📋",label:"Attend."},{id:"profile",icon:"👤",label:"Profile"},{id:"settings",icon:"⚙️",label:"Settings"}];
   const tabs = role==="owner"?ownerTabs:memberTabs;
 
   const renderContent = () => {
@@ -2915,11 +3320,13 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
       if (activeTab==="dashboard") return <OwnerDashboard/>;
       if (activeTab==="members") return <OwnerMembers/>;
       if (activeTab==="analytics") return <OwnerAnalytics/>;
+      if (activeTab==="attendance") return <AttendancePage/>;
       if (activeTab==="aiplan") return <AIPlanSection user={user} members={members} showToast={showToast}/>;
       if (activeTab==="settings") return <SettingsSection/>;
     } else {
       if (activeTab==="dashboard") return <MemberDashboard/>;
       if (activeTab==="workout") return <MemberWorkout/>;
+      if (activeTab==="attendance") return <AttendancePage/>;
       if (activeTab==="aiplan") return <AIPlanSection user={user} members={members} showToast={showToast}/>;
       if (activeTab==="profile") return <MemberProfile/>;
       if (activeTab==="settings") return <SettingsSection/>;
@@ -2927,7 +3334,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     return null;
   };
 
-  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",aiplan:"AI Planner",settings:"Settings",workout:"Workouts",profile:"Profile"};
+  const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",attendance:"Attendance",aiplan:"Diet Plan",settings:"Settings",workout:"Workouts",profile:"Profile"};
 
   return (
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
