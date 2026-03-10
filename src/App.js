@@ -1158,6 +1158,8 @@ export default function App() {
   const [memberCoins, setMemberCoins] = useState(0);
   const [editProfile, setEditProfile] = useState(false);
   const [newMember, setNewMember] = useState({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+  const [newMemberPhoto, setNewMemberPhoto] = useState(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [whatsappConfig, setWhatsappConfig] = useState({ accountSid: "", authToken: "", fromNumber: "whatsapp:+14155238886" });
   const [whatsappLogs, setWhatsappLogs] = useState([]);
   const [loginRole, setLoginRole] = useState("owner");
@@ -1310,6 +1312,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     const dueDate = new Date(Date.now() + 30*24*60*60*1000).toISOString().split("T")[0];
     const m = {
       id, ...newMember, fees: Number(newMember.fees),
+      photo: newMemberPhoto || null,
       age: 25, height: 170, weight: 70, gender: "Male",
       goal: "Maintenance", activity: "Moderate", medical: "None",
       dueDate, status: "Unpaid", joinDate,
@@ -1321,6 +1324,8 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     // ── Send WhatsApp welcome message ──────────────────────────
     const waResult = await sendWhatsAppWelcome(m);
     setNewMember({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+    setNewMemberPhoto(null);
+    setShowPhotoOptions(false);
     setModal(null);
     setActiveTab("members");
 
@@ -1564,6 +1569,391 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     );
   };
 
+  // ── Animated Exercise GIF (pure SVG + CSS, no external URLs) ──────────────
+  const ExerciseGif = ({ name, color = "#00ff88", done = false }) => {
+    const n = (name || "").toLowerCase();
+
+    // ── categorise by keywords ──────────────────────────────────
+    const is = (...kws) => kws.some(k => n.includes(k));
+
+    // Returns an SVG string for the exercise category
+    const getSvg = () => {
+      const c   = done ? "#000" : color;
+      const bg  = done ? color  : `${color}22`;
+      const id  = Math.random().toString(36).slice(2,7); // unique IDs per render
+
+      /* ── PUSH / CHEST / PRESS / PUSH-UP / BENCH ── */
+      if (is("bench","push-up","push up","chest press","incline","decline","close-grip","cable cross","pec","dip","tricep dip","wall push","knee push")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #b${id}{animation:pushup${id} 1.4s ease-in-out infinite}
+            #a${id}{animation:armpu${id} 1.4s ease-in-out infinite}
+            @keyframes pushup${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+            @keyframes armpu${id}{0%,100%{transform:rotate(0deg) translateX(0)}50%{transform:rotate(-20deg) translateX(2px)}}
+          </style>
+          <!-- body -->
+          <g id="b${id}" transform-origin="32 40">
+            <rect x="20" y="28" width="24" height="10" rx="5" fill="${c}" opacity="0.9"/>
+            <circle cx="32" cy="22" r="7" fill="${c}"/>
+          </g>
+          <!-- arms -->
+          <g id="a${id}" transform-origin="32 38">
+            <line x1="20" y1="34" x2="10" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="44" y1="34" x2="54" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+          <!-- floor -->
+          <line x1="8" y1="46" x2="56" y2="46" stroke="${c}" stroke-width="2" opacity="0.3"/>
+        </svg>`;
+
+      /* ── PULL / ROW / PULLDOWN / PULL-UP / CHIN ── */
+      if (is("pull","row","lat pull","chin","deadlift","pendlay","t-bar","face pull","band pull")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #p${id}{animation:pull${id} 1.5s ease-in-out infinite}
+            @keyframes pull${id}{0%,100%{transform:translateY(8px)}50%{transform:translateY(-2px)}}
+          </style>
+          <line x1="32" y1="4" x2="32" y2="16" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+          <g id="p${id}" transform-origin="32 32">
+            <circle cx="32" cy="18" r="7" fill="${c}"/>
+            <rect x="22" y="24" width="20" height="10" rx="5" fill="${c}" opacity="0.9"/>
+            <line x1="22" y1="27" x2="10" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="42" y1="27" x2="54" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="26" y1="34" x2="22" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+            <line x1="38" y1="34" x2="42" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── CURL / BICEP / HAMMER / CONCENTRATION ── */
+      if (is("curl","bicep","hammer curl","concentration","reverse curl","wrist curl","preacher")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #cu${id}{animation:curl${id} 1.2s ease-in-out infinite}
+            @keyframes curl${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-50deg)}}
+          </style>
+          <circle cx="32" cy="14" r="7" fill="${c}"/>
+          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
+          <line x1="24" y1="27" x2="14" y2="36" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <g id="cu${id}" transform-origin="36 36">
+            <line x1="40" y1="27" x2="40" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <rect x="34" y="43" width="12" height="5" rx="2.5" fill="${c}" opacity="0.7"/>
+          </g>
+          <line x1="24" y1="30" x2="24" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── SQUAT / LEG PRESS / LUNGE / HIP / GLUTE / HACK ── */
+      if (is("squat","leg press","lunge","bulgarian","split squat","hip thrust","glute","step-up","step up","goblet")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #sq${id}{animation:squat${id} 1.4s ease-in-out infinite}
+            @keyframes squat${id}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(10px) scaleY(0.82)}}
+          </style>
+          <g id="sq${id}" transform-origin="32 28">
+            <circle cx="32" cy="10" r="7" fill="${c}"/>
+            <rect x="22" y="16" width="20" height="12" rx="5" fill="${c}" opacity="0.9"/>
+          </g>
+          <line x1="26" y1="44" x2="18" y2="58" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="38" y1="44" x2="46" y2="58" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="26" y1="30" x2="26" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="38" y1="30" x2="38" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── SHOULDER PRESS / OVERHEAD / ARNOLD / PUSH PRESS ── */
+      if (is("shoulder press","overhead","arnold","push press","lateral raise","front raise","upright row","shrug","military")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #sh${id}{animation:shpress${id} 1.4s ease-in-out infinite}
+            @keyframes shpress${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-6px)}}
+          </style>
+          <circle cx="32" cy="14" r="7" fill="${c}"/>
+          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
+          <g id="sh${id}" transform-origin="32 26">
+            <line x1="24" y1="24" x2="8"  y2="18" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="40" y1="24" x2="56" y2="18" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="8"  cy="16" r="4" fill="${c}" opacity="0.6"/>
+            <circle cx="56" cy="16" r="4" fill="${c}" opacity="0.6"/>
+          </g>
+          <line x1="26" y1="30" x2="22" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="30" x2="42" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── PLANK / HOLD / SUPERMAN ── */
+      if (is("plank","superman","hollow","dead bug","ab wheel","rollout","l-sit")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #pl${id}{animation:plank${id} 2s ease-in-out infinite}
+            @keyframes plank${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+          </style>
+          <g id="pl${id}" transform-origin="32 34">
+            <circle cx="14" cy="28" r="6" fill="${c}"/>
+            <rect x="18" y="30" width="32" height="8" rx="4" fill="${c}" opacity="0.9"/>
+            <line x1="18" y1="34" x2="10" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="50" y1="34" x2="56" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+          <line x1="8" y1="46" x2="56" y2="46" stroke="${c}" stroke-width="2" opacity="0.3"/>
+        </svg>`;
+
+      /* ── CRUNCH / AB / SITUP / RUSSIAN TWIST / LEG RAISE ── */
+      if (is("crunch","sit-up","situp","russian twist","leg raise","ab ","core","woodchop","hanging leg","oblique")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #cr${id}{animation:crunch${id} 1.3s ease-in-out infinite}
+            @keyframes crunch${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-30deg)}}
+          </style>
+          <line x1="8" y1="50" x2="56" y2="50" stroke="${c}" stroke-width="2" opacity="0.3"/>
+          <!-- lower body static -->
+          <line x1="30" y1="50" x2="24" y2="38" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="34" y1="50" x2="40" y2="38" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- torso + head animated -->
+          <g id="cr${id}" transform-origin="32 38">
+            <rect x="26" y="28" width="12" height="12" rx="5" fill="${c}" opacity="0.9"/>
+            <circle cx="32" cy="22" r="6" fill="${c}"/>
+            <line x1="26" y1="32" x2="16" y2="28" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+            <line x1="38" y1="32" x2="48" y2="28" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── RUN / CARDIO / JUMP / BURPEE / MOUNTAIN CLIMBER / SPRINT / HIIT ── */
+      if (is("run","cardio","jump","burpee","mountain climber","sprint","jog","skip","battle rope","box jump","jumping jack","walk","treadmill","hiit")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #rn${id}{animation:run${id} 0.7s ease-in-out infinite}
+            #rl${id}{animation:runl${id} 0.7s ease-in-out infinite}
+            #rr${id}{animation:runr${id} 0.7s ease-in-out infinite}
+            @keyframes run${id}{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+            @keyframes runl${id}{0%,100%{transform:rotate(30deg)}50%{transform:rotate(-30deg)}}
+            @keyframes runr${id}{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(30deg)}}
+          </style>
+          <circle cx="32" cy="12" r="7" fill="${c}"/>
+          <g id="rn${id}" transform-origin="32 24">
+            <rect x="26" y="18" width="12" height="14" rx="5" fill="${c}" opacity="0.9"/>
+          </g>
+          <g id="rl${id}" transform-origin="28 32">
+            <line x1="28" y1="32" x2="20" y2="48" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+          <g id="rr${id}" transform-origin="36 32">
+            <line x1="36" y1="32" x2="44" y2="48" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+          <line x1="28" y1="24" x2="14" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
+          <line x1="36" y1="24" x2="50" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
+        </svg>`;
+
+      /* ── CALF RAISE / TIBIALIS / CALF ── */
+      if (is("calf","tibialis")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #cf${id}{animation:calf${id} 0.9s ease-in-out infinite}
+            @keyframes calf${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+          </style>
+          <g id="cf${id}" transform-origin="32 32">
+            <circle cx="32" cy="10" r="7" fill="${c}"/>
+            <rect x="24" y="16" width="16" height="12" rx="5" fill="${c}" opacity="0.9"/>
+            <line x1="26" y1="28" x2="22" y2="42" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="38" y1="28" x2="42" y2="42" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+          <line x1="18" y1="54" x2="28" y2="54" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <line x1="36" y1="54" x2="46" y2="54" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+        </svg>`;
+
+      /* ── YOGA / STRETCH / MEDITATION / BREATHING / FOAM ROLL / MOBILITY ── */
+      if (is("yoga","stretch","meditat","breath","foam","mobility","rotation","child","cat-cow","hip flexor","neck","recovery","cool down","rest","contrast")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #yg${id}{animation:yoga${id} 3s ease-in-out infinite}
+            @keyframes yoga${id}{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+          </style>
+          <g id="yg${id}" transform-origin="32 32">
+            <circle cx="32" cy="14" r="7" fill="${c}"/>
+            <line x1="32" y1="20" x2="32" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="28" x2="12" y2="24" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="28" x2="52" y2="24" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="40" x2="18" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="40" x2="46" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── SKULL CRUSHER / TRICEP EXT / TRICEP PUSHDOWN / KICKBACK / OVERHEAD TRICEP ── */
+      if (is("skull","tricep","close grip","overhead tricep","kickback")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #tc${id}{animation:tricep${id} 1.2s ease-in-out infinite}
+            @keyframes tricep${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}
+          </style>
+          <circle cx="24" cy="16" r="6" fill="${c}"/>
+          <rect x="18" y="22" width="14" height="10" rx="4" fill="${c}" opacity="0.9"/>
+          <line x1="18" y1="28" x2="10" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <g id="tc${id}" transform-origin="32 28">
+            <line x1="32" y1="22" x2="42" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="42" y1="26" x2="56" y2="20" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+            <rect x="50" y="16" width="8" height="5" rx="2" fill="${c}" opacity="0.5"/>
+          </g>
+          <line x1="24" y1="32" x2="20" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <line x1="30" y1="32" x2="34" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── POWER CLEAN / CLEAN / THRUSTER / BARBELL COMPLEX / POWER ── */
+      if (is("power clean","clean","thruster","barbell complex","complex","snatch")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #pc${id}{animation:pclean${id} 1s ease-in-out infinite}
+            @keyframes pclean${id}{0%{transform:translateY(12px) rotate(0deg)}40%{transform:translateY(-6px) rotate(-5deg)}100%{transform:translateY(12px) rotate(0deg)}}
+          </style>
+          <g id="pc${id}" transform-origin="32 32">
+            <circle cx="32" cy="10" r="7" fill="${c}"/>
+            <rect x="24" y="16" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
+            <line x1="24" y1="20" x2="8"  y2="22" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="40" y1="20" x2="56" y2="22" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="8"  cy="22" r="5" fill="${c}" opacity="0.5"/>
+            <circle cx="56" cy="22" r="5" fill="${c}" opacity="0.5"/>
+            <line x1="28" y1="26" x2="22" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="36" y1="26" x2="42" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── ROPE / BATTLE ROPE ── */
+      if (is("rope","battle")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #rp1${id}{animation:rope1${id} 0.5s ease-in-out infinite}
+            #rp2${id}{animation:rope2${id} 0.5s ease-in-out infinite 0.25s}
+            @keyframes rope1${id}{0%,100%{transform:translateY(-4px)}50%{transform:translateY(4px)}}
+            @keyframes rope2${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-4px)}}
+          </style>
+          <circle cx="32" cy="14" r="6" fill="${c}"/>
+          <rect x="26" y="20" width="12" height="10" rx="4" fill="${c}" opacity="0.9"/>
+          <line x1="26" y1="26" x2="16" y2="34" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="26" x2="48" y2="34" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <g id="rp1${id}">
+            <path d="M8 38 Q14 34 20 38 Q26 42 32 38" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+          <g id="rp2${id}">
+            <path d="M32 38 Q38 34 44 38 Q50 42 56 38" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── GOOD MORNING / BACK EXTENSION / RDL / ROMANIAN ── */
+      if (is("good morning","back ext","rdl","romanian","hip hinge")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #gm${id}{animation:goodm${id} 1.4s ease-in-out infinite}
+            @keyframes goodm${id}{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(0deg)}}
+          </style>
+          <line x1="32" y1="48" x2="22" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="32" y1="48" x2="42" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <g id="gm${id}" transform-origin="32 48">
+            <circle cx="32" cy="18" r="7" fill="${c}"/>
+            <rect x="24" y="24" width="16" height="24" rx="5" fill="${c}" opacity="0.9"/>
+            <line x1="24" y1="30" x2="10" y2="28" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="40" y1="30" x2="54" y2="28" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── SHRUG / NECK / TRAP ── */
+      if (is("shrug","neck","trap")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #sk${id}{animation:shrug${id} 1s ease-in-out infinite}
+            @keyframes shrug${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-5px)}}
+          </style>
+          <g id="sk${id}" transform-origin="32 20">
+            <circle cx="32" cy="14" r="7" fill="${c}"/>
+            <rect x="22" y="20" width="20" height="10" rx="5" fill="${c}" opacity="0.9"/>
+            <line x1="22" y1="24" x2="8" y2="22" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+            <line x1="42" y1="24" x2="56" y2="22" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+          </g>
+          <line x1="26" y1="36" x2="22" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="36" x2="42" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── LEG CURL / LEG EXTENSION / LEG RAISE ── */
+      if (is("leg curl","leg ext","leg raise","seated leg","lying leg")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #lc${id}{animation:legcurl${id} 1.2s ease-in-out infinite}
+            @keyframes legcurl${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(50deg)}}
+          </style>
+          <!-- seated body -->
+          <circle cx="18" cy="20" r="6" fill="${c}"/>
+          <rect x="12" y="26" width="14" height="10" rx="4" fill="${c}" opacity="0.9"/>
+          <line x1="12" y1="32" x2="4" y2="30" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <!-- bench -->
+          <rect x="6" y="36" width="24" height="4" rx="2" fill="${c}" opacity="0.25"/>
+          <!-- animated leg -->
+          <g id="lc${id}" transform-origin="20 36">
+            <line x1="20" y1="36" x2="50" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="52" cy="44" r="5" fill="${c}" opacity="0.5"/>
+          </g>
+          <line x1="20" y1="36" x2="22" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>`;
+
+      /* ── WALKING LUNGE / LUNGE ── */
+      if (is("lunge","walking lunge")) return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #ln${id}{animation:lunge${id} 1.3s ease-in-out infinite}
+            @keyframes lunge${id}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.15)}}
+          </style>
+          <g id="ln${id}" transform-origin="32 32">
+            <circle cx="32" cy="10" r="7" fill="${c}"/>
+            <rect x="26" y="16" width="12" height="10" rx="4" fill="${c}" opacity="0.9"/>
+            <line x1="26" y1="22" x2="14" y2="26" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="38" y1="22" x2="50" y2="26" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- front leg -->
+            <line x1="30" y1="26" x2="18" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="18" y1="40" x2="14" y2="56" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- back leg -->
+            <line x1="34" y1="26" x2="46" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="46" y1="40" x2="50" y2="56" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+        </svg>`;
+
+      /* ── DEFAULT fallback — generic dumbbell curl ── */
+      return `
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="12" fill="${bg}"/>
+          <style>
+            #df${id}{animation:def${id} 1.3s ease-in-out infinite}
+            @keyframes def${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-40deg)}}
+          </style>
+          <circle cx="32" cy="14" r="7" fill="${c}"/>
+          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
+          <line x1="24" y1="26" x2="12" y2="34" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+          <g id="df${id}" transform-origin="36 26">
+            <line x1="40" y1="26" x2="52" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
+            <rect x="49" y="28" width="10" height="5" rx="2" fill="${c}" opacity="0.6"/>
+          </g>
+          <line x1="28" y1="30" x2="24" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="30" x2="40" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+    };
+
+    return (
+      <div
+        style={{
+          width:52, height:52, flexShrink:0, borderRadius:10,
+          overflow:"hidden", background:"transparent",
+        }}
+        dangerouslySetInnerHTML={{ __html: getSvg() }}
+      />
+    );
+  };
+
   const MemberWorkout = () => {
     const today = new Date();
     const dayIdx = today.getDay();
@@ -1679,29 +2069,41 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
                   display:"flex",alignItems:"center",gap:12,
                   background:done?`${viewW.color}0e`:"var(--card)",
                   border:`1px solid ${done?viewW.color:"var(--border)"}`,
-                  borderRadius:14,padding:"11px 14px",
+                  borderRadius:16,padding:"10px 14px 10px 10px",
                   cursor:selDay===dayIdx?"pointer":"default",
                   transition:"all 0.25s",
-                  boxShadow:done?`0 0 14px ${viewW.color}1a`:"none",
+                  boxShadow:done?`0 0 18px ${viewW.color}25`:"none",
                 }}
               >
-                {/* Number / check */}
+                {/* Animated GIF */}
                 <div style={{
-                  width:26,height:26,borderRadius:7,flexShrink:0,
-                  background:done?viewW.color:`${viewW.color}20`,
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  fontFamily:"Rajdhani",fontSize:12,fontWeight:700,
-                  color:done?"#000":viewW.color,transition:"all 0.25s",
+                  borderRadius:12,overflow:"hidden",flexShrink:0,
+                  border:`1.5px solid ${done?viewW.color:`${viewW.color}44`}`,
+                  transition:"border-color 0.25s",
+                  boxShadow:done?`0 0 10px ${viewW.color}44`:"none",
                 }}>
-                  {done?"✓":(i+1)}
+                  <ExerciseGif name={ex.name} color={viewW.color} done={done}/>
                 </div>
+
                 {/* Info */}
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"Rajdhani",fontSize:15,fontWeight:700,color:done?viewW.color:"var(--text)",marginBottom:2,transition:"color 0.25s"}}>{ex.name}</div>
-                  <div style={{fontSize:10,color:"var(--text3)",marginBottom:4}}>{ex.muscle}</div>
-                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    <span style={{fontSize:10,fontWeight:600,color:viewW.color,background:`${viewW.color}15`,borderRadius:5,padding:"1px 6px"}}>{ex.sets}</span>
-                    <span style={{fontSize:10,fontWeight:600,color:"var(--text2)",background:"var(--bg3)",borderRadius:5,padding:"1px 6px"}}>{ex.reps}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:1}}>
+                    {/* Number badge */}
+                    <div style={{
+                      width:18,height:18,borderRadius:5,flexShrink:0,
+                      background:done?viewW.color:`${viewW.color}25`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontFamily:"Rajdhani",fontSize:10,fontWeight:700,
+                      color:done?"#000":viewW.color,transition:"all 0.25s",
+                    }}>
+                      {done?"✓":(i+1)}
+                    </div>
+                    <div style={{fontFamily:"Rajdhani",fontSize:15,fontWeight:700,color:done?viewW.color:"var(--text)",transition:"color 0.25s",lineHeight:1.1}}>{ex.name}</div>
+                  </div>
+                  <div style={{fontSize:10,color:"var(--text3)",marginBottom:5,paddingLeft:24}}>{ex.muscle}</div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap",paddingLeft:24}}>
+                    <span style={{fontSize:10,fontWeight:600,color:viewW.color,background:`${viewW.color}18`,borderRadius:5,padding:"2px 7px"}}>{ex.sets}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:"var(--text2)",background:"var(--bg3)",borderRadius:5,padding:"2px 7px"}}>{ex.reps}</span>
                   </div>
                 </div>
               </div>
@@ -2033,10 +2435,150 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
       );
     }
     if (modal==="addMember") return (
-      <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
-        <div className="modal-sheet">
+      <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget){setModal(null);setNewMemberPhoto(null);setShowPhotoOptions(false);}}}>
+        <div className="modal-sheet" style={{maxHeight:"92vh",overflowY:"auto"}}>
           <div className="modal-handle"/>
           <div className="modal-title">➕ Add New Member</div>
+
+          {/* ── Photo Picker ── */}
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:20}}>
+            {/* Avatar preview */}
+            <div style={{
+              width:96,height:96,borderRadius:24,
+              background:newMemberPhoto?"transparent":"linear-gradient(135deg,var(--bg3),var(--card2))",
+              border:`3px solid ${newMemberPhoto?"var(--neon)":"var(--border)"}`,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:44,marginBottom:12,overflow:"hidden",
+              boxShadow:newMemberPhoto?"0 0 20px rgba(0,255,136,0.3)":"none",
+              transition:"all 0.3s",position:"relative",cursor:"pointer",
+            }} onClick={()=>setShowPhotoOptions(p=>!p)}>
+              {newMemberPhoto
+                ? <img src={newMemberPhoto} alt="Member" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                : "👤"
+              }
+              {/* Edit overlay */}
+              <div style={{
+                position:"absolute",inset:0,background:"rgba(0,0,0,0.45)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                opacity:0,transition:"opacity 0.2s",borderRadius:21,
+              }}
+                onMouseEnter={e=>e.currentTarget.style.opacity=1}
+                onMouseLeave={e=>e.currentTarget.style.opacity=0}
+              >
+                <span style={{fontSize:20}}>✏️</span>
+              </div>
+            </div>
+
+            {/* Photo action buttons */}
+            {!showPhotoOptions ? (
+              <button onClick={()=>setShowPhotoOptions(true)} style={{
+                display:"flex",alignItems:"center",gap:6,
+                background:"var(--card2)",border:"1px solid var(--border)",
+                borderRadius:20,padding:"7px 16px",cursor:"pointer",
+                fontSize:13,color:"var(--text2)",fontWeight:600,transition:"all 0.2s",
+              }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--neon)";e.currentTarget.style.color="var(--neon)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--text2)";}}
+              >
+                <span style={{fontSize:16}}>📸</span>
+                {newMemberPhoto ? "Change Photo" : "Add Photo (Optional)"}
+              </button>
+            ) : (
+              <div style={{
+                display:"flex",gap:10,animation:"slideUp 0.2s ease",
+              }}>
+                {/* Camera option */}
+                <label style={{
+                  display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                  background:"var(--card)",border:"2px solid var(--neon)",
+                  borderRadius:16,padding:"14px 20px",cursor:"pointer",
+                  transition:"all 0.2s",boxShadow:"0 0 16px rgba(0,255,136,0.2)",
+                }}>
+                  <input type="file" accept="image/*" capture="environment" style={{display:"none"}}
+                    onChange={e=>{
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas = document.createElement("canvas");
+                          const size = 200;
+                          canvas.width = size; canvas.height = size;
+                          const ctx = canvas.getContext("2d");
+                          const scale = Math.max(size/img.width, size/img.height);
+                          const w = img.width*scale, h = img.height*scale;
+                          ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+                          setNewMemberPhoto(canvas.toDataURL("image/jpeg", 0.7));
+                          setShowPhotoOptions(false);
+                        };
+                        img.src = ev.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <span style={{fontSize:32}}>📷</span>
+                  <span style={{fontSize:12,fontWeight:700,color:"var(--neon)"}}>Camera</span>
+                  <span style={{fontSize:10,color:"var(--text3)"}}>Take photo</span>
+                </label>
+
+                {/* Gallery option */}
+                <label style={{
+                  display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                  background:"var(--card)",border:"2px solid var(--neon2)",
+                  borderRadius:16,padding:"14px 20px",cursor:"pointer",
+                  transition:"all 0.2s",boxShadow:"0 0 16px rgba(0,212,255,0.2)",
+                }}>
+                  <input type="file" accept="image/*" style={{display:"none"}}
+                    onChange={e=>{
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas = document.createElement("canvas");
+                          const size = 200;
+                          canvas.width = size; canvas.height = size;
+                          const ctx = canvas.getContext("2d");
+                          const scale = Math.max(size/img.width, size/img.height);
+                          const w = img.width*scale, h = img.height*scale;
+                          ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+                          setNewMemberPhoto(canvas.toDataURL("image/jpeg", 0.7));
+                          setShowPhotoOptions(false);
+                        };
+                        img.src = ev.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <span style={{fontSize:32}}>🖼️</span>
+                  <span style={{fontSize:12,fontWeight:700,color:"var(--neon2)"}}>Gallery</span>
+                  <span style={{fontSize:10,color:"var(--text3)"}}>Choose file</span>
+                </label>
+
+                {/* Remove / Cancel */}
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {newMemberPhoto&&(
+                    <button onClick={()=>{setNewMemberPhoto(null);setShowPhotoOptions(false);}} style={{
+                      display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+                      background:"rgba(255,68,68,0.1)",border:"1px solid rgba(255,68,68,0.3)",
+                      borderRadius:12,padding:"10px 14px",cursor:"pointer",color:"var(--danger)",fontSize:11,fontWeight:700,
+                    }}>
+                      <span style={{fontSize:22}}>🗑️</span>Remove
+                    </button>
+                  )}
+                  <button onClick={()=>setShowPhotoOptions(false)} style={{
+                    display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+                    background:"var(--card2)",border:"1px solid var(--border)",
+                    borderRadius:12,padding:"10px 14px",cursor:"pointer",color:"var(--text3)",fontSize:11,
+                  }}>
+                    <span style={{fontSize:22}}>✖️</span>Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Basic fields */}
           {[
@@ -2050,20 +2592,20 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
             </div>
           ))}
 
-          {/* Phone field with WhatsApp indicator */}
+          {/* Phone field */}
           <div className="input-group">
             <label className="input-label">📱 Mobile Number <span style={{color:"#25D366",fontSize:10,fontWeight:700,marginLeft:4}}>● WhatsApp</span></label>
             <div style={{position:"relative"}}>
               <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text2)",fontWeight:600}}>+91</span>
               <input className="input-field" placeholder="10-digit mobile number" type="tel" maxLength={10}
                 style={{paddingLeft:46}}
-                value={newMember.phone} onChange={e=>setNewMember(p=>({...p,phone:e.target.value.replace(/\D/g,"")}))}/>
+                value={newMember.phone} onChange={e=>setNewMember(p=>({...p,phone:e.target.value.replace(/[^0-9]/g,"")}))}/>
             </div>
             <div style={{fontSize:10,color:"#25D366",marginTop:4,display:"flex",alignItems:"center",gap:4}}>
               <span>📲</span>
               {whatsappConfig.accountSid
                 ? "Welcome WhatsApp message will be sent automatically"
-                : "⚙️ Configure Twilio in Settings → WhatsApp to enable auto-message"}
+                : "⚙️ Configure Twilio in Settings → WhatsApp to enable"}
             </div>
           </div>
 
@@ -2080,7 +2622,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
             </div>
           </div>
 
-          {/* WhatsApp preview banner */}
+          {/* WhatsApp preview */}
           {whatsappConfig.accountSid && newMember.phone && newMember.phone.length===10 && (
             <div style={{marginTop:14,background:"linear-gradient(135deg,#075e54,#128c7e)",borderRadius:14,padding:14,border:"1px solid #25D366"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -2089,10 +2631,8 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
                 <div style={{marginLeft:"auto",background:"#25D366",borderRadius:6,padding:"2px 8px",fontSize:10,fontWeight:700,color:"#fff"}}>LIVE</div>
               </div>
               <div style={{fontSize:11,color:"rgba(255,255,255,0.8)",lineHeight:1.5}}>
-                Will send to <strong style={{color:"#25D366"}}>+91 {newMember.phone}</strong> →<br/>
-                🏋️ Welcome to Crossfit Gym!<br/>
-                Member: <strong>{newMember.name||"[Name]"}</strong> | Plan: <strong>{newMember.plan}</strong> | ₹{newMember.fees}/mo<br/>
-                Login: <strong>{newMember.username||"[username]"}</strong>
+                Will send to <strong style={{color:"#25D366"}}>+91 {newMember.phone}</strong><br/>
+                Member: <strong>{newMember.name||"[Name]"}</strong> | Plan: <strong>{newMember.plan}</strong> | ₹{newMember.fees}/mo
               </div>
             </div>
           )}
