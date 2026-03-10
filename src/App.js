@@ -1166,6 +1166,9 @@ export default function App() {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [legalPage, setLegalPage] = useState(null);
+  const [memberMenu, setMemberMenu] = useState(null);        // id of member whose menu is open
+  const [deleteConfirm, setDeleteConfirm] = useState(null);  // member object to delete
+  const [editMemberData, setEditMemberData] = useState(null); // member object being edited
 
   // ── Firebase: live listener for members ──
   useEffect(() => {
@@ -1342,7 +1345,18 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
 
   const deleteMember = async (id) => {
     await deleteDoc(doc(db, "members", id));
-    showToast("🗑️ Member removed"); setModal(null);
+    setDeleteConfirm(null);
+    setMemberMenu(null);
+    showToast("✅ Member deleted successfully");
+  };
+
+  const saveEditMember = async () => {
+    if (!editMemberData) return;
+    const { id, ...data } = editMemberData;
+    await updateDoc(doc(db, "members", id), data);
+    setEditMemberData(null);
+    setMemberMenu(null);
+    showToast("✅ Member updated!");
   };
 
   const saveProfile = async (id, data) => {
@@ -1482,26 +1496,272 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     </div>
   );
 
-  const OwnerMembers = () => (
-    <div>
-      <div className="tab-bar">{["All","Active","Unpaid","Premium"].map(f=><button key={f} className={`tab-pill${f==="All"?" active":""}`}>{f}</button>)}</div>
-      {members.map(m=>(
-        <div key={m.id} className="member-card" onClick={()=>{setSelectedMember(m);setModal("memberDetail");}}>
-          <div className="member-avatar">{m.gender==="Female"?"👩":"👨"}</div>
-          <div className="member-info">
-            <div className="member-name">{m.name}</div>
-            <div className="text-sm text-muted mt-8">@{m.username} · Joined {m.joinDate}</div>
-            <div className="row mt-8" style={{gap:6}}><span className={`badge-plan-${(m.plan||"basic").toLowerCase()}`}>{m.plan}</span><span className="coin-small">🪙 {m.coins}</span><span style={{fontSize:11,color:"var(--warning)"}}>🔥{m.streak}d</span></div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
-            <span className={`badge-status badge-${(m.status||"unpaid").toLowerCase()}`}>{m.status}</span>
-            <span style={{fontSize:11,color:"var(--text3)"}}>Due {m.dueDate}</span>
-          </div>
+  const OwnerMembers = () => {
+    const [filter, setFilter] = useState("All");
+    const filtered = members.filter(m => {
+      if (filter === "All")     return true;
+      if (filter === "Active")  return m.status === "Paid";
+      if (filter === "Unpaid")  return m.status === "Unpaid";
+      if (filter === "Premium") return m.plan === "Premium";
+      return true;
+    });
+    return (
+      <div onClick={()=>memberMenu&&setMemberMenu(null)}>
+        <div className="tab-bar">
+          {["All","Active","Unpaid","Premium"].map(f=>(
+            <button key={f} className={`tab-pill${f===filter?" active":""}`} onClick={()=>setFilter(f)}>{f}</button>
+          ))}
         </div>
-      ))}
-      <div style={{padding:"0 16px 16px"}}><button className="btn-primary" onClick={()=>setModal("addMember")}>+ Add New Member</button></div>
-    </div>
-  );
+
+        {filtered.map(m=>(
+          <div key={m.id} style={{position:"relative"}}>
+            <div className="member-card" onClick={()=>{setSelectedMember(m);setModal("memberDetail");}}>
+              {/* Avatar */}
+              <div className="member-avatar" style={{overflow:"hidden",borderRadius:"50%"}}>
+                {m.photo
+                  ? <img src={m.photo} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  : (m.gender==="Female"?"👩":"👨")
+                }
+              </div>
+              {/* Info */}
+              <div className="member-info">
+                <div className="member-name">{m.name}</div>
+                <div className="text-sm text-muted mt-8">@{m.username} · Joined {m.joinDate}</div>
+                <div className="row mt-8" style={{gap:6}}>
+                  <span className={`badge-plan-${(m.plan||"basic").toLowerCase()}`}>{m.plan}</span>
+                  <span className="coin-small">🪙 {m.coins}</span>
+                  <span style={{fontSize:11,color:"var(--warning)"}}>🔥{m.streak}d</span>
+                </div>
+              </div>
+              {/* Status + due */}
+              <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end",marginRight:6}}>
+                <span className={`badge-status badge-${(m.status||"unpaid").toLowerCase()}`}>{m.status}</span>
+                <span style={{fontSize:11,color:"var(--text3)"}}>Due {m.dueDate}</span>
+              </div>
+              {/* ⋮ 3-dot button */}
+              <button
+                onClick={e=>{e.stopPropagation();setMemberMenu(memberMenu===m.id?null:m.id);}}
+                style={{
+                  width:32,height:32,borderRadius:8,border:"1px solid var(--border)",
+                  background:memberMenu===m.id?"rgba(0,255,136,0.12)":"var(--card2)",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  cursor:"pointer",flexShrink:0,transition:"all 0.18s",
+                  color:memberMenu===m.id?"var(--neon)":"var(--text2)",
+                  fontSize:18,fontWeight:700,lineHeight:1,
+                }}
+              >⋮</button>
+            </div>
+
+            {/* Dropdown menu */}
+            {memberMenu===m.id&&(
+              <div
+                onClick={e=>e.stopPropagation()}
+                style={{
+                  position:"absolute",right:16,top:"calc(100% - 4px)",zIndex:200,
+                  background:"var(--bg2)",border:"1px solid var(--border)",
+                  borderRadius:14,overflow:"hidden",
+                  boxShadow:"0 8px 32px rgba(0,0,0,0.6)",
+                  animation:"slideUp 0.15s ease",minWidth:180,
+                }}
+              >
+                {/* Edit option */}
+                <button
+                  onClick={()=>{
+                    setEditMemberData({...m});
+                    setMemberMenu(null);
+                  }}
+                  style={{
+                    width:"100%",padding:"13px 16px",background:"transparent",
+                    border:"none",borderBottom:"1px solid var(--border)",
+                    display:"flex",alignItems:"center",gap:10,cursor:"pointer",
+                    color:"var(--text)",fontSize:14,fontWeight:600,textAlign:"left",
+                    transition:"background 0.15s",
+                  }}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(0,255,136,0.08)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                >
+                  <span style={{fontSize:16}}>✏️</span>
+                  <span>Edit Member</span>
+                </button>
+                {/* Delete option */}
+                <button
+                  onClick={()=>{
+                    setDeleteConfirm(m);
+                    setMemberMenu(null);
+                  }}
+                  style={{
+                    width:"100%",padding:"13px 16px",background:"transparent",
+                    border:"none",
+                    display:"flex",alignItems:"center",gap:10,cursor:"pointer",
+                    color:"var(--danger)",fontSize:14,fontWeight:600,textAlign:"left",
+                    transition:"background 0.15s",
+                  }}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,68,68,0.08)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                >
+                  <span style={{fontSize:16}}>🗑️</span>
+                  <span>Delete Member</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {filtered.length===0&&(
+          <div style={{textAlign:"center",padding:"40px 20px"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🔍</div>
+            <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,marginBottom:6}}>No members found</div>
+            <div style={{fontSize:13,color:"var(--text2)"}}>Try a different filter</div>
+          </div>
+        )}
+
+        <div style={{padding:"0 16px 16px"}}>
+          <button className="btn-primary" onClick={()=>setModal("addMember")}>+ Add New Member</button>
+        </div>
+
+        {/* ── Delete Confirm Popup ── */}
+        {deleteConfirm&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(6px)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
+            onClick={()=>setDeleteConfirm(null)}>
+            <div onClick={e=>e.stopPropagation()} style={{
+              background:"var(--bg2)",border:"1px solid var(--border)",
+              borderRadius:24,padding:28,width:"100%",maxWidth:340,
+              animation:"slideUp 0.2s ease",
+              boxShadow:"0 20px 60px rgba(0,0,0,0.7)",
+            }}>
+              <div style={{textAlign:"center",marginBottom:20}}>
+                <div style={{
+                  width:64,height:64,borderRadius:16,
+                  background:"rgba(255,68,68,0.12)",border:"2px solid rgba(255,68,68,0.3)",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:30,margin:"0 auto 14px",
+                }}>🗑️</div>
+                <div style={{fontFamily:"Rajdhani",fontSize:22,fontWeight:700,color:"var(--text)",marginBottom:6}}>Delete Member?</div>
+                <div style={{fontSize:14,color:"var(--text2)",lineHeight:1.5}}>
+                  You're about to permanently delete<br/>
+                  <span style={{color:"var(--danger)",fontWeight:700,fontSize:16}}>"{deleteConfirm.name}"</span>
+                </div>
+              </div>
+              <div style={{
+                background:"rgba(255,68,68,0.06)",border:"1px solid rgba(255,68,68,0.2)",
+                borderRadius:12,padding:"10px 14px",marginBottom:20,
+                display:"flex",alignItems:"flex-start",gap:8,
+              }}>
+                <span style={{fontSize:14,marginTop:1}}>⚠️</span>
+                <span style={{fontSize:12,color:"var(--text2)",lineHeight:1.5}}>
+                  This will permanently remove all their data including attendance, payments, and workout history. This cannot be undone.
+                </span>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button
+                  onClick={()=>setDeleteConfirm(null)}
+                  style={{
+                    flex:1,padding:"13px",borderRadius:12,border:"1px solid var(--border)",
+                    background:"var(--card)",color:"var(--text)",
+                    fontFamily:"Rajdhani,sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",
+                  }}
+                >Cancel</button>
+                <button
+                  onClick={()=>deleteMember(deleteConfirm.id)}
+                  style={{
+                    flex:1,padding:"13px",borderRadius:12,border:"none",
+                    background:"linear-gradient(135deg,#ff4444,#cc0000)",
+                    color:"#fff",fontFamily:"Rajdhani,sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",
+                    boxShadow:"0 4px 20px rgba(255,68,68,0.4)",
+                  }}
+                >🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Edit Member Popup ── */}
+        {editMemberData&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(6px)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center"}}
+            onClick={()=>setEditMemberData(null)}>
+            <div onClick={e=>e.stopPropagation()} style={{
+              background:"var(--bg2)",borderRadius:"24px 24px 0 0",
+              padding:"20px 20px 32px",width:"100%",maxWidth:480,
+              maxHeight:"85vh",overflowY:"auto",
+              animation:"slideUp 0.25s ease",
+              borderTop:"1px solid var(--border)",
+            }}>
+              <div style={{width:40,height:4,background:"var(--border)",borderRadius:2,margin:"0 auto 18px"}}/>
+              <div style={{fontFamily:"Rajdhani",fontSize:20,fontWeight:700,marginBottom:18,display:"flex",alignItems:"center",gap:8}}>
+                ✏️ Edit Member
+                <div style={{marginLeft:"auto",fontSize:12,color:"var(--text3)"}}>ID: {editMemberData.id}</div>
+              </div>
+
+              {[
+                {k:"name",     label:"Full Name",     type:"text"},
+                {k:"username", label:"Username",      type:"text"},
+                {k:"password", label:"Password",      type:"password"},
+                {k:"phone",    label:"Phone (+91)",   type:"tel"},
+              ].map(({k,label,type})=>(
+                <div key={k} className="input-group">
+                  <label className="input-label">{label}</label>
+                  <input className="input-field" type={type} value={editMemberData[k]||""}
+                    onChange={e=>setEditMemberData(p=>({...p,[k]:e.target.value}))}/>
+                </div>
+              ))}
+
+              <div className="two-col" style={{gap:10}}>
+                <div className="input-group" style={{margin:0}}>
+                  <label className="input-label">Plan</label>
+                  <select className="input-field" value={editMemberData.plan||"Basic"}
+                    onChange={e=>setEditMemberData(p=>({...p,plan:e.target.value}))}>
+                    <option>Basic</option><option>Premium</option>
+                  </select>
+                </div>
+                <div className="input-group" style={{margin:0}}>
+                  <label className="input-label">Monthly Fee (₹)</label>
+                  <input className="input-field" type="number" value={editMemberData.fees||""}
+                    onChange={e=>setEditMemberData(p=>({...p,fees:Number(e.target.value)}))}/>
+                </div>
+              </div>
+
+              <div className="two-col" style={{gap:10}}>
+                <div className="input-group" style={{margin:0}}>
+                  <label className="input-label">Status</label>
+                  <select className="input-field" value={editMemberData.status||"Unpaid"}
+                    onChange={e=>setEditMemberData(p=>({...p,status:e.target.value}))}>
+                    <option>Paid</option><option>Unpaid</option>
+                  </select>
+                </div>
+                <div className="input-group" style={{margin:0}}>
+                  <label className="input-label">Due Date</label>
+                  <input className="input-field" type="date" value={editMemberData.dueDate||""}
+                    onChange={e=>setEditMemberData(p=>({...p,dueDate:e.target.value}))}/>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Gender</label>
+                <select className="input-field" value={editMemberData.gender||"Male"}
+                  onChange={e=>setEditMemberData(p=>({...p,gender:e.target.value}))}>
+                  <option>Male</option><option>Female</option>
+                </select>
+              </div>
+
+              <div style={{display:"flex",gap:10,marginTop:8}}>
+                <button onClick={()=>setEditMemberData(null)} style={{
+                  flex:1,padding:"14px",borderRadius:12,border:"1px solid var(--border)",
+                  background:"var(--card)",color:"var(--text)",
+                  fontFamily:"Rajdhani,sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",
+                }}>Cancel</button>
+                <button onClick={saveEditMember} style={{
+                  flex:2,padding:"14px",borderRadius:12,border:"none",
+                  background:"linear-gradient(135deg,var(--neon),#00cc6e)",
+                  color:"#000",fontFamily:"Rajdhani,sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",
+                  boxShadow:"0 4px 20px rgba(0,255,136,0.35)",
+                }}>💾 Save Changes</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const OwnerAnalytics = () => (
     <div>
