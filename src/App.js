@@ -15,7 +15,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 // ─── Static Config (never changes) ───────────────────────────────────────────
-const OWNER = { username: "admin", password: "admin123", name: "Crossfit Admin", upiId: "crossfit@upi" };
+const OWNER = { username: "admin", password: "admin123", name: "Crossfit Admin", upiId: "8709024076@ybl" };
 
 const MONTHLY_REVENUE = [
   { month: "Sep", revenue: 28000 }, { month: "Oct", revenue: 35000 },
@@ -334,6 +334,27 @@ const css = `
     --warning: #ffaa00;
     --paid: #00cc66;
     --unpaid: #ff4444;
+  }
+  [data-theme="light"] {
+    --bg: #f0f2f5;
+    --bg2: #ffffff;
+    --bg3: #e8eaed;
+    --card: #ffffff;
+    --card2: #f5f7fa;
+    --border: #d0d5dd;
+    --neon: #00aa55;
+    --neon2: #0088cc;
+    --neon3: #e05a20;
+    --gold: #cc9900;
+    --purple: #6d45d4;
+    --text: #111827;
+    --text2: #4b5563;
+    --text3: #9ca3af;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warning: #d97706;
+    --paid: #16a34a;
+    --unpaid: #dc2626;
   }
 
   body { font-family: 'Exo 2', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
@@ -1147,6 +1168,7 @@ function AIPlanSection({ user, members, showToast }) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem("gymTheme") || "dark");
   const [role, setRole] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [toast, setToast] = useState({ show: false, msg: "" });
@@ -2493,7 +2515,44 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
               <div className="info-row"><span className="info-key">WhatsApp</span>
                 <span style={{fontSize:12,fontWeight:700,color:configured?"#25D366":"var(--warning)"}}>{configured?"🟢 Active":"🟡 Not configured"}</span>
               </div>
-              <div className="info-row"><span className="info-key">Theme</span><span className="info-val">🌙 Dark</span></div>
+              <div className="info-row">
+                <span className="info-key">Theme</span>
+                <button
+                  onClick={()=>{
+                    const next = theme==="dark"?"light":"dark";
+                    setTheme(next);
+                    localStorage.setItem("gymTheme", next);
+                  }}
+                  style={{
+                    display:"flex",alignItems:"center",gap:8,
+                    background:theme==="dark"?"rgba(0,255,136,0.08)":"rgba(0,0,0,0.06)",
+                    border:`1px solid ${theme==="dark"?"rgba(0,255,136,0.3)":"rgba(0,0,0,0.15)"}`,
+                    borderRadius:20,padding:"5px 14px",cursor:"pointer",
+                    transition:"all 0.25s",
+                  }}
+                >
+                  <span style={{fontSize:16}}>{theme==="dark"?"🌙":"☀️"}</span>
+                  <span style={{fontFamily:"Rajdhani,sans-serif",fontSize:13,fontWeight:700,color:"var(--text)"}}>
+                    {theme==="dark"?"Dark":"Light"}
+                  </span>
+                  {/* pill toggle */}
+                  <div style={{
+                    width:36,height:20,borderRadius:10,
+                    background:theme==="dark"?"#1a1a2e":"#e2e8f0",
+                    border:"1px solid var(--border)",
+                    position:"relative",transition:"background 0.3s",
+                  }}>
+                    <div style={{
+                      position:"absolute",top:2,
+                      left:theme==="dark"?2:16,
+                      width:14,height:14,borderRadius:"50%",
+                      background:theme==="dark"?"var(--neon)":"#1a1a2e",
+                      transition:"left 0.25s, background 0.25s",
+                      boxShadow:theme==="dark"?"0 0 6px rgba(0,255,136,0.6)":"none",
+                    }}/>
+                  </div>
+                </button>
+              </div>
             </div>
             <div className="card">
               <div className="card-title">🔔 Notifications</div>
@@ -3337,7 +3396,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
   const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",attendance:"Attendance",aiplan:"Diet Plan",settings:"Settings",workout:"Workouts",profile:"Profile"};
 
   return (
-    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    <div data-theme={theme} style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <style>{css}</style>
       <div className="app-shell">
         <div className="app-header">
