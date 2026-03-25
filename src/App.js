@@ -365,7 +365,7 @@ const css = `
   ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 2px; }
 
   .app-shell {
-    max-width: 420px; min-height: 100vh; margin: 0 auto;
+    max-width: 420px; height: 100vh; margin: 0 auto;
     background: var(--bg); position: relative;
     display: flex; flex-direction: column; overflow: hidden;
     box-shadow: 0 0 60px rgba(0,255,136,0.08);
@@ -500,7 +500,7 @@ const css = `
   .app-header {
     padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
     background: var(--bg2); border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+    flex-shrink: 0; z-index: 100; backdrop-filter: blur(10px);
   }
   .header-title {
     font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700;
@@ -522,7 +522,7 @@ const css = `
   .icon-btn:hover { border-color: var(--neon); }
 
   .bottom-nav {
-    position: sticky; bottom: 0; background: var(--bg2);
+    flex-shrink: 0; background: var(--bg2);
     border-top: 1px solid var(--border); display: flex; padding: 8px 0 12px;
     z-index: 100; backdrop-filter: blur(15px);
   }
@@ -541,7 +541,7 @@ const css = `
     background: var(--neon); animation: pulse 2s ease-in-out infinite;
   }
 
-  .content { flex: 1; overflow-y: auto; padding-bottom: 10px; }
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
 
   .card {
     background: var(--card); border: 1px solid var(--border);
@@ -816,6 +816,7 @@ function AIPlanSection({ user, members, showToast }) {
     gender: base.gender || "Male", age: base.age || 25,
     height: base.height || 170, weight: base.weight || 70,
     activity: base.activity || "Moderate", goal: base.goal || "Fat Loss",
+    dietType: "veg",
   });
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
@@ -850,7 +851,42 @@ function AIPlanSection({ user, members, showToast }) {
       const splits = [0.25,0.10,0.30,0.10,0.20,0.05].map(p=>Math.round(kcal*p));
       const times = ["Breakfast (7:00 AM)","Mid-Morning Snack (10:00 AM)","Lunch (1:00 PM)","Pre-Workout (4:30 PM)","Dinner (7:30 PM)","Night / Post-Workout (9:30 PM)"];
       const icons = ["🌅","🍎","☀️","⚡","🌙","🌟"];
-      const FOODS = {
+      const isVeg = form.dietType === "veg";
+      const FOODS_VEG = {
+        "Fat Loss": [
+          {f:"Moong dal chilla (3 pieces) + mint chutney + green tea",p:"18g"},
+          {f:"1 medium apple + 10 raw almonds",p:"4g"},
+          {f:"Rajma (¾ cup) + brown rice (½ cup) + cucumber-tomato salad + curd (100ml)",p:"22g"},
+          {f:"Low-fat paneer (80g) + 1 fruit (guava or orange)",p:"14g"},
+          {f:"Palak tofu stir-fry + 2 rotis + mixed salad",p:"20g"},
+          {f:"Warm low-fat turmeric milk + 5 soaked almonds",p:"8g"},
+        ],
+        "Muscle Gain": [
+          {f:"Paneer bhurji (200g) + 3 whole-wheat parathas + 1 glass full-fat milk",p:"38g"},
+          {f:"Whey protein shake (1 scoop, veg-friendly) + banana + peanut butter",p:"28g"},
+          {f:"Soya chunk curry (200g) + white rice (1.5 cups) + dal + mixed sabzi",p:"44g"},
+          {f:"Peanut butter sandwich (2 slices) + 1 glass whole milk + handful mixed nuts",p:"22g"},
+          {f:"Rajma + 3 rotis + paneer tikka (150g) + curd (200ml)",p:"40g"},
+          {f:"Mass gainer shake or banana + oats + milk smoothie",p:"24g"},
+        ],
+        "Maintenance": [
+          {f:"Poha with peas & peanuts + 1 glass milk + green tea",p:"16g"},
+          {f:"Mixed fruit bowl (1 cup) + handful walnuts",p:"5g"},
+          {f:"Dal tadka + brown rice + paneer sabzi + salad",p:"26g"},
+          {f:"Roasted chana (30g) + 1 banana or seasonal fruit",p:"9g"},
+          {f:"2 rotis + paneer/tofu curry + curd + salad",p:"24g"},
+          {f:"1 glass warm milk with turmeric + 5 almonds",p:"10g"},
+        ],
+        "Endurance": [
+          {f:"Oats porridge (80g) with banana, honey & chia seeds + 1 glass milk",p:"18g"},
+          {f:"4–5 dates + 1 glass coconut water + 5 walnuts",p:"6g"},
+          {f:"Brown rice (1 cup) + tofu stir-fry (150g) + steamed veggies + olive oil",p:"30g"},
+          {f:"Sports drink or banana + peanut butter on rice cakes",p:"8g"},
+          {f:"Wholegrain pasta (100g dry) + paneer tomato sauce + side salad",p:"28g"},
+          {f:"Recovery smoothie: milk + banana + oats + veg protein (½ scoop)",p:"18g"},
+        ],
+      };
+      const FOODS_NONVEG = {
         "Fat Loss": [
           {f:"Egg white omelette (3 whites+1 yolk), sautéed spinach & mushrooms, black coffee",p:"22g"},
           {f:"1 medium apple + 10 raw almonds",p:"4g"},
@@ -884,6 +920,7 @@ function AIPlanSection({ user, members, showToast }) {
           {f:"Recovery smoothie: milk + banana + oats + whey (½ scoop)",p:"20g"},
         ],
       };
+      const FOODS = isVeg ? FOODS_VEG : FOODS_NONVEG;
       const WORKOUTS = {
         "Fat Loss": {
           Moderate:[
@@ -1075,6 +1112,48 @@ function AIPlanSection({ user, members, showToast }) {
             ))}
           </div>
         </div>
+        {/* Diet type selector */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:11,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}}>🥗 Diet Preference</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {[
+              {v:"veg",   e:"🥦", label:"Vegetarian",    sub:"Plant-based meals",   color:"#00c850", glow:"rgba(0,200,80,0.15)"},
+              {v:"nonveg",e:"🍗", label:"Non-Vegetarian",sub:"Includes meat & eggs", color:"#ff6b35", glow:"rgba(255,107,53,0.15)"},
+            ].map(d=>{
+              const sel = form.dietType === d.v;
+              return (
+                <button key={d.v} onClick={()=>set("dietType",d.v)} style={{
+                  padding:"14px 10px",borderRadius:14,textAlign:"left",cursor:"pointer",
+                  border:`2px solid ${sel ? d.color : "var(--border)"}`,
+                  background: sel ? d.glow : "var(--bg2)",
+                  transition:"all 0.2s",
+                  boxShadow: sel ? `0 0 16px ${d.glow}` : "none",
+                  display:"flex",alignItems:"center",gap:10,
+                }}>
+                  <div style={{
+                    width:40,height:40,borderRadius:10,flexShrink:0,
+                    background: sel ? `${d.color}22` : "var(--bg3)",
+                    border:`1px solid ${sel ? d.color : "var(--border)"}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:22,transition:"all 0.2s",
+                  }}>{d.e}</div>
+                  <div>
+                    <div style={{fontFamily:"Exo 2,sans-serif",fontSize:13,fontWeight:700,color: sel ? d.color : "var(--text)",marginBottom:2}}>{d.label}</div>
+                    <div style={{fontSize:10,color:"var(--text3)"}}>{d.sub}</div>
+                  </div>
+                  {sel && (
+                    <div style={{
+                      marginLeft:"auto",width:20,height:20,borderRadius:"50%",
+                      background:d.color,display:"flex",alignItems:"center",
+                      justifyContent:"center",fontSize:11,color:"#000",fontWeight:700,flexShrink:0,
+                    }}>✓</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {error && <div style={{background:"rgba(255,68,68,0.1)",border:"1px solid rgba(255,68,68,0.3)",borderRadius:8,padding:"10px 14px",marginBottom:12,color:"var(--danger)",fontSize:13}}>⚠️ {error}</div>}
         <button onClick={generate} disabled={loading} style={{width:"100%",padding:16,background:loading?"rgba(0,255,136,0.1)":"linear-gradient(135deg,var(--neon),var(--neon2))",border:loading?"1px solid rgba(0,255,136,0.3)":"none",borderRadius:14,fontFamily:"Rajdhani,sans-serif",fontSize:18,fontWeight:700,letterSpacing:2,color:loading?"var(--neon)":"#000",cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":"0 4px 22px rgba(0,255,136,0.35)",transition:"all 0.3s"}}>
           {loading?"⏳ GENERATING...":plan?"🔄 REGENERATE PLAN":"✨ GENERATE MY PLAN"}
