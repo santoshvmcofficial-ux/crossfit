@@ -3475,7 +3475,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
   const pageTitles = {dashboard:"CROSSFIT",members:"Members",analytics:"Analytics",attendance:"Attendance",aiplan:"Diet Plan",settings:"Settings",workout:"Workouts",profile:"Profile"};
 
   return (
-    <div data-theme={theme} style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    <div data-theme={theme} style={{height:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
       <style>{css}</style>
       <div className="app-shell">
         <div className="app-header">
