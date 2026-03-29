@@ -2051,387 +2051,162 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
   };
 
   // ── Animated Exercise GIF (pure SVG + CSS, no external URLs) ──────────────
+  // ── 3D-style Exercise Illustration using real exercise GIFs from Giphy/public CDN ──
+  // ── 3D Exercise GIF — emoji-based animated icons (no external dependencies) ──
   const ExerciseGif = ({ name, color = "#00ff88", done = false }) => {
     const n = (name || "").toLowerCase();
-
-    // ── categorise by keywords ──────────────────────────────────
     const is = (...kws) => kws.some(k => n.includes(k));
 
-    // Returns an SVG string for the exercise category
-    const getSvg = () => {
-      const c   = done ? "#000" : color;
-      const bg  = done ? color  : `${color}22`;
-      const id  = Math.random().toString(36).slice(2,7); // unique IDs per render
-
-      /* ── PUSH / CHEST / PRESS / PUSH-UP / BENCH ── */
-      if (is("bench","push-up","push up","chest press","incline","decline","close-grip","cable cross","pec","dip","tricep dip","wall push","knee push")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #b${id}{animation:pushup${id} 1.4s ease-in-out infinite}
-            #a${id}{animation:armpu${id} 1.4s ease-in-out infinite}
-            @keyframes pushup${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-            @keyframes armpu${id}{0%,100%{transform:rotate(0deg) translateX(0)}50%{transform:rotate(-20deg) translateX(2px)}}
-          </style>
-          <!-- body -->
-          <g id="b${id}" transform-origin="32 40">
-            <rect x="20" y="28" width="24" height="10" rx="5" fill="${c}" opacity="0.9"/>
-            <circle cx="32" cy="22" r="7" fill="${c}"/>
-          </g>
-          <!-- arms -->
-          <g id="a${id}" transform-origin="32 38">
-            <line x1="20" y1="34" x2="10" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="44" y1="34" x2="54" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-          <!-- floor -->
-          <line x1="8" y1="46" x2="56" y2="46" stroke="${c}" stroke-width="2" opacity="0.3"/>
-        </svg>`;
-
-      /* ── PULL / ROW / PULLDOWN / PULL-UP / CHIN ── */
-      if (is("pull","row","lat pull","chin","deadlift","pendlay","t-bar","face pull","band pull")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #p${id}{animation:pull${id} 1.5s ease-in-out infinite}
-            @keyframes pull${id}{0%,100%{transform:translateY(8px)}50%{transform:translateY(-2px)}}
-          </style>
-          <line x1="32" y1="4" x2="32" y2="16" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
-          <g id="p${id}" transform-origin="32 32">
-            <circle cx="32" cy="18" r="7" fill="${c}"/>
-            <rect x="22" y="24" width="20" height="10" rx="5" fill="${c}" opacity="0.9"/>
-            <line x1="22" y1="27" x2="10" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="42" y1="27" x2="54" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="26" y1="34" x2="22" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-            <line x1="38" y1="34" x2="42" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── CURL / BICEP / HAMMER / CONCENTRATION ── */
-      if (is("curl","bicep","hammer curl","concentration","reverse curl","wrist curl","preacher")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #cu${id}{animation:curl${id} 1.2s ease-in-out infinite}
-            @keyframes curl${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-50deg)}}
-          </style>
-          <circle cx="32" cy="14" r="7" fill="${c}"/>
-          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
-          <line x1="24" y1="27" x2="14" y2="36" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <g id="cu${id}" transform-origin="36 36">
-            <line x1="40" y1="27" x2="40" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <rect x="34" y="43" width="12" height="5" rx="2.5" fill="${c}" opacity="0.7"/>
-          </g>
-          <line x1="24" y1="30" x2="24" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── SQUAT / LEG PRESS / LUNGE / HIP / GLUTE / HACK ── */
-      if (is("squat","leg press","lunge","bulgarian","split squat","hip thrust","glute","step-up","step up","goblet")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #sq${id}{animation:squat${id} 1.4s ease-in-out infinite}
-            @keyframes squat${id}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(10px) scaleY(0.82)}}
-          </style>
-          <g id="sq${id}" transform-origin="32 28">
-            <circle cx="32" cy="10" r="7" fill="${c}"/>
-            <rect x="22" y="16" width="20" height="12" rx="5" fill="${c}" opacity="0.9"/>
-          </g>
-          <line x1="26" y1="44" x2="18" y2="58" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="38" y1="44" x2="46" y2="58" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="26" y1="30" x2="26" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="38" y1="30" x2="38" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── SHOULDER PRESS / OVERHEAD / ARNOLD / PUSH PRESS ── */
-      if (is("shoulder press","overhead","arnold","push press","lateral raise","front raise","upright row","shrug","military")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #sh${id}{animation:shpress${id} 1.4s ease-in-out infinite}
-            @keyframes shpress${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-6px)}}
-          </style>
-          <circle cx="32" cy="14" r="7" fill="${c}"/>
-          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
-          <g id="sh${id}" transform-origin="32 26">
-            <line x1="24" y1="24" x2="8"  y2="18" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="40" y1="24" x2="56" y2="18" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <circle cx="8"  cy="16" r="4" fill="${c}" opacity="0.6"/>
-            <circle cx="56" cy="16" r="4" fill="${c}" opacity="0.6"/>
-          </g>
-          <line x1="26" y1="30" x2="22" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <line x1="38" y1="30" x2="42" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── PLANK / HOLD / SUPERMAN ── */
-      if (is("plank","superman","hollow","dead bug","ab wheel","rollout","l-sit")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #pl${id}{animation:plank${id} 2s ease-in-out infinite}
-            @keyframes plank${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-          </style>
-          <g id="pl${id}" transform-origin="32 34">
-            <circle cx="14" cy="28" r="6" fill="${c}"/>
-            <rect x="18" y="30" width="32" height="8" rx="4" fill="${c}" opacity="0.9"/>
-            <line x1="18" y1="34" x2="10" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="50" y1="34" x2="56" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-          <line x1="8" y1="46" x2="56" y2="46" stroke="${c}" stroke-width="2" opacity="0.3"/>
-        </svg>`;
-
-      /* ── CRUNCH / AB / SITUP / RUSSIAN TWIST / LEG RAISE ── */
-      if (is("crunch","sit-up","situp","russian twist","leg raise","ab ","core","woodchop","hanging leg","oblique")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #cr${id}{animation:crunch${id} 1.3s ease-in-out infinite}
-            @keyframes crunch${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-30deg)}}
-          </style>
-          <line x1="8" y1="50" x2="56" y2="50" stroke="${c}" stroke-width="2" opacity="0.3"/>
-          <!-- lower body static -->
-          <line x1="30" y1="50" x2="24" y2="38" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="34" y1="50" x2="40" y2="38" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <!-- torso + head animated -->
-          <g id="cr${id}" transform-origin="32 38">
-            <rect x="26" y="28" width="12" height="12" rx="5" fill="${c}" opacity="0.9"/>
-            <circle cx="32" cy="22" r="6" fill="${c}"/>
-            <line x1="26" y1="32" x2="16" y2="28" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-            <line x1="38" y1="32" x2="48" y2="28" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── RUN / CARDIO / JUMP / BURPEE / MOUNTAIN CLIMBER / SPRINT / HIIT ── */
-      if (is("run","cardio","jump","burpee","mountain climber","sprint","jog","skip","battle rope","box jump","jumping jack","walk","treadmill","hiit")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #rn${id}{animation:run${id} 0.7s ease-in-out infinite}
-            #rl${id}{animation:runl${id} 0.7s ease-in-out infinite}
-            #rr${id}{animation:runr${id} 0.7s ease-in-out infinite}
-            @keyframes run${id}{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
-            @keyframes runl${id}{0%,100%{transform:rotate(30deg)}50%{transform:rotate(-30deg)}}
-            @keyframes runr${id}{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(30deg)}}
-          </style>
-          <circle cx="32" cy="12" r="7" fill="${c}"/>
-          <g id="rn${id}" transform-origin="32 24">
-            <rect x="26" y="18" width="12" height="14" rx="5" fill="${c}" opacity="0.9"/>
-          </g>
-          <g id="rl${id}" transform-origin="28 32">
-            <line x1="28" y1="32" x2="20" y2="48" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-          <g id="rr${id}" transform-origin="36 32">
-            <line x1="36" y1="32" x2="44" y2="48" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-          <line x1="28" y1="24" x2="14" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
-          <line x1="36" y1="24" x2="50" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
-        </svg>`;
-
-      /* ── CALF RAISE / TIBIALIS / CALF ── */
-      if (is("calf","tibialis")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #cf${id}{animation:calf${id} 0.9s ease-in-out infinite}
-            @keyframes calf${id}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-          </style>
-          <g id="cf${id}" transform-origin="32 32">
-            <circle cx="32" cy="10" r="7" fill="${c}"/>
-            <rect x="24" y="16" width="16" height="12" rx="5" fill="${c}" opacity="0.9"/>
-            <line x1="26" y1="28" x2="22" y2="42" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="38" y1="28" x2="42" y2="42" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-          <line x1="18" y1="54" x2="28" y2="54" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
-          <line x1="36" y1="54" x2="46" y2="54" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
-        </svg>`;
-
-      /* ── YOGA / STRETCH / MEDITATION / BREATHING / FOAM ROLL / MOBILITY ── */
-      if (is("yoga","stretch","meditat","breath","foam","mobility","rotation","child","cat-cow","hip flexor","neck","recovery","cool down","rest","contrast")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #yg${id}{animation:yoga${id} 3s ease-in-out infinite}
-            @keyframes yoga${id}{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-          </style>
-          <g id="yg${id}" transform-origin="32 32">
-            <circle cx="32" cy="14" r="7" fill="${c}"/>
-            <line x1="32" y1="20" x2="32" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="32" y1="28" x2="12" y2="24" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="32" y1="28" x2="52" y2="24" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="32" y1="40" x2="18" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="32" y1="40" x2="46" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── SKULL CRUSHER / TRICEP EXT / TRICEP PUSHDOWN / KICKBACK / OVERHEAD TRICEP ── */
-      if (is("skull","tricep","close grip","overhead tricep","kickback")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #tc${id}{animation:tricep${id} 1.2s ease-in-out infinite}
-            @keyframes tricep${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}
-          </style>
-          <circle cx="24" cy="16" r="6" fill="${c}"/>
-          <rect x="18" y="22" width="14" height="10" rx="4" fill="${c}" opacity="0.9"/>
-          <line x1="18" y1="28" x2="10" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <g id="tc${id}" transform-origin="32 28">
-            <line x1="32" y1="22" x2="42" y2="16" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="42" y1="26" x2="56" y2="20" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
-            <rect x="50" y="16" width="8" height="5" rx="2" fill="${c}" opacity="0.5"/>
-          </g>
-          <line x1="24" y1="32" x2="20" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <line x1="30" y1="32" x2="34" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── POWER CLEAN / CLEAN / THRUSTER / BARBELL COMPLEX / POWER ── */
-      if (is("power clean","clean","thruster","barbell complex","complex","snatch")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #pc${id}{animation:pclean${id} 1s ease-in-out infinite}
-            @keyframes pclean${id}{0%{transform:translateY(12px) rotate(0deg)}40%{transform:translateY(-6px) rotate(-5deg)}100%{transform:translateY(12px) rotate(0deg)}}
-          </style>
-          <g id="pc${id}" transform-origin="32 32">
-            <circle cx="32" cy="10" r="7" fill="${c}"/>
-            <rect x="24" y="16" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
-            <line x1="24" y1="20" x2="8"  y2="22" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="40" y1="20" x2="56" y2="22" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <circle cx="8"  cy="22" r="5" fill="${c}" opacity="0.5"/>
-            <circle cx="56" cy="22" r="5" fill="${c}" opacity="0.5"/>
-            <line x1="28" y1="26" x2="22" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="36" y1="26" x2="42" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── ROPE / BATTLE ROPE ── */
-      if (is("rope","battle")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #rp1${id}{animation:rope1${id} 0.5s ease-in-out infinite}
-            #rp2${id}{animation:rope2${id} 0.5s ease-in-out infinite 0.25s}
-            @keyframes rope1${id}{0%,100%{transform:translateY(-4px)}50%{transform:translateY(4px)}}
-            @keyframes rope2${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-4px)}}
-          </style>
-          <circle cx="32" cy="14" r="6" fill="${c}"/>
-          <rect x="26" y="20" width="12" height="10" rx="4" fill="${c}" opacity="0.9"/>
-          <line x1="26" y1="26" x2="16" y2="34" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <line x1="38" y1="26" x2="48" y2="34" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <g id="rp1${id}">
-            <path d="M8 38 Q14 34 20 38 Q26 42 32 38" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>
-          </g>
-          <g id="rp2${id}">
-            <path d="M32 38 Q38 34 44 38 Q50 42 56 38" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── GOOD MORNING / BACK EXTENSION / RDL / ROMANIAN ── */
-      if (is("good morning","back ext","rdl","romanian","hip hinge")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #gm${id}{animation:goodm${id} 1.4s ease-in-out infinite}
-            @keyframes goodm${id}{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(0deg)}}
-          </style>
-          <line x1="32" y1="48" x2="22" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="32" y1="48" x2="42" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <g id="gm${id}" transform-origin="32 48">
-            <circle cx="32" cy="18" r="7" fill="${c}"/>
-            <rect x="24" y="24" width="16" height="24" rx="5" fill="${c}" opacity="0.9"/>
-            <line x1="24" y1="30" x2="10" y2="28" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="40" y1="30" x2="54" y2="28" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── SHRUG / NECK / TRAP ── */
-      if (is("shrug","neck","trap")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #sk${id}{animation:shrug${id} 1s ease-in-out infinite}
-            @keyframes shrug${id}{0%,100%{transform:translateY(4px)}50%{transform:translateY(-5px)}}
-          </style>
-          <g id="sk${id}" transform-origin="32 20">
-            <circle cx="32" cy="14" r="7" fill="${c}"/>
-            <rect x="22" y="20" width="20" height="10" rx="5" fill="${c}" opacity="0.9"/>
-            <line x1="22" y1="24" x2="8" y2="22" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
-            <line x1="42" y1="24" x2="56" y2="22" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
-          </g>
-          <line x1="26" y1="36" x2="22" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <line x1="38" y1="36" x2="42" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── LEG CURL / LEG EXTENSION / LEG RAISE ── */
-      if (is("leg curl","leg ext","leg raise","seated leg","lying leg")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #lc${id}{animation:legcurl${id} 1.2s ease-in-out infinite}
-            @keyframes legcurl${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(50deg)}}
-          </style>
-          <!-- seated body -->
-          <circle cx="18" cy="20" r="6" fill="${c}"/>
-          <rect x="12" y="26" width="14" height="10" rx="4" fill="${c}" opacity="0.9"/>
-          <line x1="12" y1="32" x2="4" y2="30" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <!-- bench -->
-          <rect x="6" y="36" width="24" height="4" rx="2" fill="${c}" opacity="0.25"/>
-          <!-- animated leg -->
-          <g id="lc${id}" transform-origin="20 36">
-            <line x1="20" y1="36" x2="50" y2="44" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <circle cx="52" cy="44" r="5" fill="${c}" opacity="0.5"/>
-          </g>
-          <line x1="20" y1="36" x2="22" y2="54" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-        </svg>`;
-
-      /* ── WALKING LUNGE / LUNGE ── */
-      if (is("lunge","walking lunge")) return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #ln${id}{animation:lunge${id} 1.3s ease-in-out infinite}
-            @keyframes lunge${id}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.15)}}
-          </style>
-          <g id="ln${id}" transform-origin="32 32">
-            <circle cx="32" cy="10" r="7" fill="${c}"/>
-            <rect x="26" y="16" width="12" height="10" rx="4" fill="${c}" opacity="0.9"/>
-            <line x1="26" y1="22" x2="14" y2="26" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="38" y1="22" x2="50" y2="26" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- front leg -->
-            <line x1="30" y1="26" x2="18" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="18" y1="40" x2="14" y2="56" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- back leg -->
-            <line x1="34" y1="26" x2="46" y2="40" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="46" y1="40" x2="50" y2="56" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          </g>
-        </svg>`;
-
-      /* ── DEFAULT fallback — generic dumbbell curl ── */
-      return `
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect width="64" height="64" rx="12" fill="${bg}"/>
-          <style>
-            #df${id}{animation:def${id} 1.3s ease-in-out infinite}
-            @keyframes def${id}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-40deg)}}
-          </style>
-          <circle cx="32" cy="14" r="7" fill="${c}"/>
-          <rect x="24" y="20" width="16" height="10" rx="5" fill="${c}" opacity="0.9"/>
-          <line x1="24" y1="26" x2="12" y2="34" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-          <g id="df${id}" transform-origin="36 26">
-            <line x1="40" y1="26" x2="52" y2="32" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>
-            <rect x="49" y="28" width="10" height="5" rx="2" fill="${c}" opacity="0.6"/>
-          </g>
-          <line x1="28" y1="30" x2="24" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-          <line x1="36" y1="30" x2="40" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
+    // Pick the best emoji + CSS animation for each exercise type
+    const getExercise = () => {
+      if (is("bench","flat bench","chest press","incline","decline","cable cross","pec deck","cable fly"))
+        return { emoji:"🏋️", anim:"benchPress", label:"Push" };
+      if (is("push-up","push up","knee push","wall push"))
+        return { emoji:"💪", anim:"pushUp", label:"Push" };
+      if (is("dip","weighted dip","bench dip","tricep dip"))
+        return { emoji:"💪", anim:"dips", label:"Dip" };
+      if (is("deadlift","rdl","romanian","good morning","hip hinge"))
+        return { emoji:"🏋️", anim:"deadlift", label:"Pull" };
+      if (is("squat","back squat","front squat","goblet","hack squat","bulgarian","split squat"))
+        return { emoji:"🦵", anim:"squat", label:"Squat" };
+      if (is("lunge","walking lunge","step-up","step up","reverse lunge"))
+        return { emoji:"🦵", anim:"lunge", label:"Lunge" };
+      if (is("leg press"))
+        return { emoji:"🦵", anim:"legPress", label:"Press" };
+      if (is("leg curl","leg ext","lying leg","seated leg"))
+        return { emoji:"🦵", anim:"legCurl", label:"Curl" };
+      if (is("calf","tibialis"))
+        return { emoji:"🦶", anim:"calfRaise", label:"Raise" };
+      if (is("pull-up","pull up","chin up","chin-up","weighted pull"))
+        return { emoji:"💪", anim:"pullUp", label:"Pull" };
+      if (is("lat pull","pulldown"))
+        return { emoji:"💪", anim:"latPull", label:"Pull" };
+      if (is("row","barbell row","cable row","db row","t-bar","seated row","pendlay"))
+        return { emoji:"🏋️", anim:"row", label:"Row" };
+      if (is("face pull","band pull","rear delt flye","rear delt"))
+        return { emoji:"💪", anim:"facePull", label:"Pull" };
+      if (is("curl","bicep","hammer curl","concentration","barbell curl","reverse curl","preacher","incline db curl"))
+        return { emoji:"💪", anim:"curl", label:"Curl" };
+      if (is("overhead","shoulder press","arnold","push press","military","ohp"))
+        return { emoji:"🏋️", anim:"ohp", label:"Press" };
+      if (is("lateral raise","front raise","upright row"))
+        return { emoji:"💪", anim:"lateralRaise", label:"Raise" };
+      if (is("shrug","trap","neck train"))
+        return { emoji:"💪", anim:"shrug", label:"Shrug" };
+      if (is("tricep","skull","close-grip","close grip","pushdown","kickback","overhead tricep","cable tricep"))
+        return { emoji:"💪", anim:"tricep", label:"Extend" };
+      if (is("hip thrust","glute bridge","glute","hip ext"))
+        return { emoji:"🍑", anim:"hipThrust", label:"Thrust" };
+      if (is("plank","hollow","dead bug","superman","ab wheel","rollout"))
+        return { emoji:"🔥", anim:"plank", label:"Hold" };
+      if (is("crunch","sit-up","situp","russian twist","leg raise","hanging leg","oblique","woodchop"))
+        return { emoji:"🔥", anim:"crunch", label:"Abs" };
+      if (is("run","sprint","jog","treadmill"))
+        return { emoji:"🏃", anim:"run", label:"Cardio" };
+      if (is("jump","jumping jack","box jump","burpee","mountain climber","battle rope","hiit","sprint interval"))
+        return { emoji:"⚡", anim:"jump", label:"Power" };
+      if (is("power clean","clean","snatch","thruster","barbell complex","power"))
+        return { emoji:"🏋️", anim:"clean", label:"Power" };
+      if (is("yoga","stretch","foam","mobility","child","cat-cow","hip flexor","neck","cool down","rest","meditat","breath","recovery","contrast","light walk","stretching","rotation"))
+        return { emoji:"🧘", anim:"stretch", label:"Flex" };
+      if (is("walk","brisk walk","long walk"))
+        return { emoji:"🚶", anim:"walk", label:"Walk" };
+      return { emoji:"💪", anim:"curl", label:"Train" };
     };
 
+    const { emoji, anim, label } = getExercise();
+    const c    = done ? "#000" : color;
+    const bg   = done ? color  : `${color}15`;
+    const uid  = Math.random().toString(36).slice(2,6);
+
+    // Keyframe animations per exercise type
+    const anims = {
+      benchPress:  `@keyframes bp${uid}{0%,100%{transform:translateY(0) scaleX(1)}40%{transform:translateY(-5px) scaleX(1.06)}60%{transform:translateY(-5px) scaleX(1.06)}}`,
+      pushUp:      `@keyframes pu${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`,
+      dips:        `@keyframes dp${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}`,
+      deadlift:    `@keyframes dl${uid}{0%,100%{transform:rotate(0deg)}40%{transform:rotate(-25deg)}60%{transform:rotate(-25deg)}}`,
+      squat:       `@keyframes sq${uid}{0%,100%{transform:scaleY(1) translateY(0)}50%{transform:scaleY(0.72) translateY(8px)}}`,
+      lunge:       `@keyframes ln${uid}{0%,100%{transform:translateX(0)}50%{transform:translateX(4px) scaleX(1.1)}}`,
+      legPress:    `@keyframes lp${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.85)}}`,
+      legCurl:     `@keyframes lc${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}`,
+      calfRaise:   `@keyframes cr${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
+      pullUp:      `@keyframes pu2${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
+      latPull:     `@keyframes lpl${uid}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(4px) scaleY(0.92)}}`,
+      row:         `@keyframes rw${uid}{0%,100%{transform:translateX(0)}50%{transform:translateX(-7px)}}`,
+      facePull:    `@keyframes fp${uid}{0%,100%{transform:translateX(0) scaleX(1)}50%{transform:translateX(-5px) scaleX(0.92)}}`,
+      curl:        `@keyframes cu${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-55deg)}}`,
+      ohp:         `@keyframes oh${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
+      lateralRaise:`@keyframes lr${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.18)}}`,
+      shrug:       `@keyframes sh${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}`,
+      tricep:      `@keyframes tr${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(40deg)}}`,
+      hipThrust:   `@keyframes ht${uid}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-8px) scaleY(1.08)}}`,
+      plank:       `@keyframes pl${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.04)}}`,
+      crunch:      `@keyframes cn${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-28deg)}}`,
+      run:         `@keyframes rn${uid}{0%{transform:rotate(-8deg) translateX(-2px)}50%{transform:rotate(8deg) translateX(2px)}100%{transform:rotate(-8deg) translateX(-2px)}}`,
+      jump:        `@keyframes jm${uid}{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}60%{transform:translateY(-14px)}}`,
+      clean:       `@keyframes cl${uid}{0%,100%{transform:translateY(4px) rotate(0deg)}40%{transform:translateY(-8px) rotate(-8deg)}60%{transform:translateY(-8px) rotate(-8deg)}}`,
+      stretch:     `@keyframes st${uid}{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}`,
+      walk:        `@keyframes wk${uid}{0%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}100%{transform:rotate(-5deg)}}`,
+    };
+
+    const animKeys = {
+      benchPress:"bp",pushUp:"pu",dips:"dp",deadlift:"dl",squat:"sq",lunge:"ln",
+      legPress:"lp",legCurl:"lc",calfRaise:"cr",pullUp:"pu2",latPull:"lpl",
+      row:"rw",facePull:"fp",curl:"cu",ohp:"oh",lateralRaise:"lr",shrug:"sh",
+      tricep:"tr",hipThrust:"ht",plank:"pl",crunch:"cn",run:"rn",jump:"jm",
+      clean:"cl",stretch:"st",walk:"wk",
+    };
+    const dur = {
+      run:"0.55s",jump:"0.9s",squat:"1.5s",deadlift:"1.8s",calfRaise:"0.9s",
+      curl:"1.3s",tricep:"1.2s",crunch:"1.3s",shrug:"0.9s",clean:"1s",
+      stretch:"3s",walk:"0.7s",
+    };
+
+    const animName  = `${animKeys[anim]||"cu"}${uid}`;
+    const animStyle = anims[anim] || anims.curl;
+    const animDur   = dur[anim]  || "1.4s";
+
     return (
-      <div
-        style={{
-          width:52, height:52, flexShrink:0, borderRadius:10,
-          overflow:"hidden", background:"transparent",
-        }}
-        dangerouslySetInnerHTML={{ __html: getSvg() }}
-      />
+      <div style={{
+        width:56, height:56, borderRadius:14, flexShrink:0,
+        background: bg,
+        border:`2px solid ${done ? color : color+"44"}`,
+        boxShadow: done ? `0 0 14px ${color}50` : `0 2px 8px rgba(0,0,0,0.3)`,
+        display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center",
+        overflow:"hidden", position:"relative",
+        transition:"all 0.25s",
+      }}>
+        <style>{animStyle}</style>
+
+        {/* 3D gradient background circle */}
+        <div style={{
+          position:"absolute",
+          width:44, height:44, borderRadius:"50%",
+          background:`radial-gradient(circle at 35% 35%, ${color}30, ${color}08)`,
+          top:"50%", left:"50%",
+          transform:"translate(-50%,-50%)",
+        }}/>
+
+        {/* Animated emoji */}
+        <div style={{
+          fontSize:26,
+          animation:`${animName} ${animDur} ease-in-out infinite`,
+          position:"relative", zIndex:1,
+          filter:`drop-shadow(0 2px 4px ${color}60)`,
+        }}>
+          {done ? "✅" : emoji}
+        </div>
+
+        {/* Label */}
+        <div style={{
+          fontSize:8, fontWeight:700, letterSpacing:0.5,
+          color: done ? color : color+"bb",
+          fontFamily:"Rajdhani,sans-serif",
+          position:"relative", zIndex:1,
+          marginTop:1,
+        }}>{done ? "DONE" : label.toUpperCase()}</div>
+      </div>
     );
   };
 
