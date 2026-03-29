@@ -852,75 +852,196 @@ function AIPlanSection({ user, members, showToast }) {
       const times = ["Breakfast (7:00 AM)","Mid-Morning Snack (10:00 AM)","Lunch (1:00 PM)","Pre-Workout (4:30 PM)","Dinner (7:30 PM)","Night / Post-Workout (9:30 PM)"];
       const icons = ["🌅","🍎","☀️","⚡","🌙","🌟"];
       const isVeg = form.dietType === "veg";
-      const FOODS_VEG = {
-        "Fat Loss": [
-          {f:"Moong dal chilla (3 pieces) + mint chutney + green tea",p:"18g"},
-          {f:"1 medium apple + 10 raw almonds",p:"4g"},
-          {f:"Rajma (¾ cup) + brown rice (½ cup) + cucumber-tomato salad + curd (100ml)",p:"22g"},
-          {f:"Low-fat paneer (80g) + 1 fruit (guava or orange)",p:"14g"},
-          {f:"Palak tofu stir-fry + 2 rotis + mixed salad",p:"20g"},
-          {f:"Warm low-fat turmeric milk + 5 soaked almonds",p:"8g"},
+
+      // ── Dynamic diet generator — unique plan based on weight, kcal, goal, dietType ──
+      const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const pick = (arr, n) => {
+        const copy = [...arr];
+        const out = [];
+        while (out.length < n && copy.length) {
+          const i = Math.floor(Math.random() * copy.length);
+          out.push(copy.splice(i, 1)[0]);
+        }
+        return out;
+      };
+
+      // Weight-scaled quantities
+      const wScaled = (base, unit) => {
+        const scale = w < 60 ? 0.8 : w < 80 ? 1.0 : w < 100 ? 1.2 : 1.4;
+        const val = Math.round(base * scale);
+        return `${val}${unit}`;
+      };
+      const eggsCount = w < 60 ? 2 : w < 80 ? 3 : w < 100 ? 4 : 5;
+      const rotiCount = w < 60 ? 2 : w < 80 ? 3 : w < 100 ? 4 : 4;
+      const riceAmt   = w < 60 ? "½ cup" : w < 80 ? "¾ cup" : w < 100 ? "1 cup" : "1.5 cups";
+      const chickenAmt = `${Math.round(w * (goal==="Muscle Gain" ? 2.2 : 1.6))}g`.replace(/\d+g/, m => {
+        const v = parseInt(m); return `${Math.min(Math.max(v,100),400)}g`;
+      });
+      const chickenG  = Math.min(Math.max(Math.round(w * (goal==="Muscle Gain" ? 2.5 : 1.8)), 100), 350);
+      const paneerG   = Math.min(Math.max(Math.round(w * (goal==="Muscle Gain" ? 3.0 : 2.0)), 100), 300);
+      const nutsCount = w < 70 ? 8 : w < 90 ? 12 : 15;
+      const protShake = goal==="Muscle Gain" ? "1.5 scoops" : "1 scoop";
+
+      // ── VEG meal pools by meal slot ──
+      const VEG_POOLS = {
+        breakfast: [
+          `Moong dal chilla (${wScaled(3,"pieces")}) + mint chutney + 1 glass warm milk`,
+          `Besan chilla (${wScaled(2,"pieces")}) + curd (${wScaled(150,"ml")}) + green tea`,
+          `Poha with peas & peanuts (${wScaled(80,"g")}) + ${nutsCount} almonds + green tea`,
+          `Oats porridge (${wScaled(70,"g")}) + banana + honey + ${nutsCount} cashews`,
+          `Paneer bhurji (${paneerG}g) + ${rotiCount-1} whole-wheat rotis + green tea`,
+          `Vegetable upma (${wScaled(80,"g")}) + coconut chutney + 1 boiled egg (if semi-veg)`,
+          `Idli (${Math.round((w/20))} pieces) + sambar (${wScaled(150,"ml")}) + coconut chutney`,
+          `Multigrain toast (${rotiCount-1} slices) + peanut butter (${wScaled(2,"tbsp")}) + banana`,
+          `Dalia porridge (${wScaled(80,"g")}) + ${nutsCount} mixed nuts + 1 glass milk`,
+          `Rajgira paratha (${rotiCount-1} nos) + low-fat curd (${wScaled(150,"ml")})`,
         ],
-        "Muscle Gain": [
-          {f:"Paneer bhurji (200g) + 3 whole-wheat parathas + 1 glass full-fat milk",p:"38g"},
-          {f:"Whey protein shake (1 scoop, veg-friendly) + banana + peanut butter",p:"28g"},
-          {f:"Soya chunk curry (200g) + white rice (1.5 cups) + dal + mixed sabzi",p:"44g"},
-          {f:"Peanut butter sandwich (2 slices) + 1 glass whole milk + handful mixed nuts",p:"22g"},
-          {f:"Rajma + 3 rotis + paneer tikka (150g) + curd (200ml)",p:"40g"},
-          {f:"Mass gainer shake or banana + oats + milk smoothie",p:"24g"},
+        midsnack: [
+          `${nutsCount} mixed nuts + 1 seasonal fruit (apple/guava/pear)`,
+          `Roasted chana (${wScaled(40,"g")}) + 1 banana`,
+          `Low-fat paneer (${wScaled(80,"g")}) + cucumber slices`,
+          `Greek yogurt (${wScaled(150,"ml")}) + 1 tbsp chia seeds + berries`,
+          `Sprouts chaat (${wScaled(80,"g")}) + lemon + chaat masala`,
+          `Makhana (${wScaled(30,"g")}) + ${nutsCount} almonds`,
+          `1 banana + ${wScaled(1,"tbsp")} peanut butter`,
+          `Coconut water (250ml) + ${nutsCount} dates`,
+          `Buttermilk (${wScaled(250,"ml")}) + roasted flaxseeds`,
+          `Fruit smoothie (banana+milk ${wScaled(200,"ml")}) + ${nutsCount} soaked almonds`,
         ],
-        "Maintenance": [
-          {f:"Poha with peas & peanuts + 1 glass milk + green tea",p:"16g"},
-          {f:"Mixed fruit bowl (1 cup) + handful walnuts",p:"5g"},
-          {f:"Dal tadka + brown rice + paneer sabzi + salad",p:"26g"},
-          {f:"Roasted chana (30g) + 1 banana or seasonal fruit",p:"9g"},
-          {f:"2 rotis + paneer/tofu curry + curd + salad",p:"24g"},
-          {f:"1 glass warm milk with turmeric + 5 almonds",p:"10g"},
+        lunch: [
+          `Dal tadka (${wScaled(1,"cup")}) + ${riceAmt} brown rice + paneer sabzi (${paneerG}g) + salad`,
+          `Rajma curry (${wScaled(1,"cup")}) + ${riceAmt} rice + cucumber raita + salad`,
+          `Chhole (${wScaled(1,"cup")}) + ${rotiCount} rotis + onion-tomato salad + curd`,
+          `Soya chunk curry (${paneerG}g) + ${riceAmt} rice + mixed vegetable sabzi`,
+          `Palak paneer (${paneerG}g) + ${rotiCount} rotis + dal soup + salad`,
+          `Tofu stir-fry (${paneerG}g) + ${riceAmt} brown rice + steamed broccoli`,
+          `Aloo gobi sabzi + ${rotiCount} rotis + moong dal + curd (${wScaled(150,"ml")})`,
+          `Mixed dal khichdi (${wScaled(1.5,"cups")}) + curd + pickle + papad`,
+          `Paneer tikka (${paneerG}g) + ${rotiCount-1} rotis + mint curd + salad`,
+          `Lobia curry (${wScaled(1,"cup")}) + ${riceAmt} jeera rice + raita`,
         ],
-        "Endurance": [
-          {f:"Oats porridge (80g) with banana, honey & chia seeds + 1 glass milk",p:"18g"},
-          {f:"4–5 dates + 1 glass coconut water + 5 walnuts",p:"6g"},
-          {f:"Brown rice (1 cup) + tofu stir-fry (150g) + steamed veggies + olive oil",p:"30g"},
-          {f:"Sports drink or banana + peanut butter on rice cakes",p:"8g"},
-          {f:"Wholegrain pasta (100g dry) + paneer tomato sauce + side salad",p:"28g"},
-          {f:"Recovery smoothie: milk + banana + oats + veg protein (½ scoop)",p:"18g"},
+        preworkout: [
+          `Banana + ${wScaled(1,"tbsp")} peanut butter`,
+          `Dates (${Math.round(w/15)} nos) + ${nutsCount} almonds`,
+          `Whole-wheat bread (${rotiCount-2} slices) + peanut butter + honey`,
+          `Mango smoothie (${wScaled(200,"ml")}) + ${nutsCount} cashews`,
+          `Oats energy bar (${wScaled(1,"nos")}) + coconut water`,
+          `Poha (${wScaled(50,"g")}) + 1 fruit`,
+          `Rice cakes (${rotiCount-2} nos) + almond butter`,
+          `Banana protein shake (${protShake} veg protein + milk ${wScaled(200,"ml")})`,
+        ],
+        dinner: [
+          `Palak tofu (${paneerG}g) + ${rotiCount-1} rotis + dal soup + salad`,
+          `Paneer curry (${paneerG}g) + ${rotiCount} rotis + curd + salad`,
+          `Moong dal + ${riceAmt} rice + vegetable sabzi + raita`,
+          `Tofu tikka masala (${paneerG}g) + ${rotiCount-1} rotis + salad`,
+          `Rajma + ${rotiCount-1} rotis + curd + onion salad`,
+          `Mixed vegetable curry + ${rotiCount} rotis + dal + curd`,
+          `Quinoa pulao (${wScaled(80,"g")}) + paneer (${wScaled(100,"g")}) + raita`,
+          `Soya keema (${paneerG}g) + ${rotiCount-1} rotis + dal + salad`,
+          `Chhole tikki (${wScaled(2,"tikki")}) + mint curd + salad`,
+          `Stuffed paneer paratha (${rotiCount-1} nos) + curd + salad`,
+        ],
+        night: [
+          `Warm turmeric milk (${wScaled(250,"ml")}) + ${nutsCount} soaked almonds`,
+          `Low-fat curd (${wScaled(150,"ml")}) + 1 tsp honey`,
+          `Casein protein (1 scoop) + warm water`,
+          `Chamomile tea + ${wScaled(5,"walnuts")}`,
+          `Milk (${wScaled(200,"ml")}) + 1 tsp ashwagandha powder`,
+          `Greek yogurt (${wScaled(100,"g")}) + chia seeds (1 tsp)`,
         ],
       };
-      const FOODS_NONVEG = {
-        "Fat Loss": [
-          {f:"Egg white omelette (3 whites+1 yolk), sautéed spinach & mushrooms, black coffee",p:"22g"},
-          {f:"1 medium apple + 10 raw almonds",p:"4g"},
-          {f:"Grilled chicken breast (150g) + steamed brown rice (¾ cup) + cucumber-tomato salad",p:"38g"},
-          {f:"Greek yogurt 100g (0% fat) + ½ scoop whey protein",p:"20g"},
-          {f:"Baked salmon (120g) + stir-fried broccoli & bell pepper + 1 small roti",p:"32g"},
-          {f:"Casein protein shake or warm low-fat turmeric milk",p:"14g"},
+
+      // ── NON-VEG meal pools ──
+      const NONVEG_POOLS = {
+        breakfast: [
+          `${eggsCount} egg omelette (spinach + mushroom) + ${rotiCount-2} whole-wheat toast + black coffee`,
+          `${eggsCount} boiled eggs + poha (${wScaled(60,"g")}) + green tea`,
+          `Egg bhurji (${eggsCount} eggs) + ${rotiCount-1} rotis + 1 glass milk`,
+          `${eggsCount-1} whole eggs + 1 banana + oats (${wScaled(60,"g")}) smoothie`,
+          `Chicken keema paratha (${rotiCount-1} nos) + curd (${wScaled(150,"ml")})`,
+          `Omelette sandwich (${eggsCount-1} eggs) + multigrain bread + black coffee`,
+          `${eggsCount} boiled eggs + avocado (if available) + multigrain toast`,
+          `Tuna (${wScaled(80,"g")}) + ${rotiCount-2} toast + ${nutsCount} almonds`,
+          `Chicken sandwich (${Math.round(chickenG*0.6)}g) + multigrain bread + green tea`,
+          `Egg white omelette (${eggsCount} whites) + sautéed veggies + black coffee`,
         ],
-        "Muscle Gain": [
-          {f:"6 whole eggs scrambled + 2 slices whole-wheat toast + 1 banana + glass full-fat milk",p:"42g"},
-          {f:"Whey shake (1 scoop) + banana + peanut butter (1 tbsp)",p:"28g"},
-          {f:"Chicken breast (200g) + white rice (1.5 cups) + dal + mixed vegetable sabzi",p:"52g"},
-          {f:"Peanut butter sandwich (2 slices) + 1 glass whole milk + handful mixed nuts",p:"22g"},
-          {f:"Paneer bhurji (200g) + 3 rotis + rajma curry + curd (200ml)",p:"44g"},
-          {f:"Whey protein (1 scoop) + banana or rice cakes (fast carb)",p:"26g"},
+        midsnack: [
+          `${nutsCount} mixed nuts + 1 boiled egg + 1 fruit`,
+          `Greek yogurt (${wScaled(150,"ml")}) + ${nutsCount} almonds`,
+          `Chicken jerky (${wScaled(40,"g")}) + 1 apple`,
+          `Hard-boiled ${eggsCount-2} eggs + cucumber slices`,
+          `Tuna (${wScaled(60,"g")}) on rice cakes (${rotiCount-3} nos)`,
+          `Cottage cheese (${wScaled(100,"g")}) + berries`,
+          `Whey protein (${protShake}) + ${nutsCount} cashews`,
+          `1 banana + ${wScaled(1,"tbsp")} peanut butter + ${eggsCount-3} boiled eggs`,
+          `Sprouts chaat (${wScaled(60,"g")}) + ${eggsCount-3} boiled egg whites`,
+          `Coconut water + ${nutsCount} almonds + 1 boiled egg`,
         ],
-        "Maintenance": [
-          {f:"Poha with peas & peanuts + 2 boiled eggs + green tea",p:"18g"},
-          {f:"Mixed fruit bowl (1 cup) + handful walnuts",p:"5g"},
-          {f:"Dal rice + chicken curry (100g) + vegetable sabzi + salad",p:"30g"},
-          {f:"Roasted chana (30g) + 1 banana or seasonal fruit",p:"9g"},
-          {f:"2 rotis + paneer/fish/egg curry + curd + salad",p:"28g"},
-          {f:"1 glass warm milk or light protein smoothie",p:"10g"},
+        lunch: [
+          `Grilled chicken breast (${chickenG}g) + ${riceAmt} brown rice + salad + curd`,
+          `Chicken curry (${chickenG}g) + ${rotiCount} rotis + dal + salad`,
+          `Fish curry (${chickenG}g) + ${riceAmt} steamed rice + vegetable sabzi`,
+          `Egg curry (${eggsCount} eggs) + ${riceAmt} rice + salad + raita`,
+          `Mutton curry (${Math.round(chickenG*0.8)}g) + ${rotiCount-1} rotis + dal + salad`,
+          `Prawn masala (${chickenG}g) + ${riceAmt} rice + cucumber salad`,
+          `Baked salmon (${chickenG}g) + ${riceAmt} quinoa + steamed broccoli`,
+          `Chicken biryani (${wScaled(1.5,"cups")}) + raita + salad`,
+          `Egg biryani (${eggsCount-1} eggs) + raita + onion salad`,
+          `Grilled fish (${chickenG}g) + ${rotiCount-1} rotis + vegetable sabzi + curd`,
         ],
-        "Endurance": [
-          {f:"Oats porridge (80g) with banana, honey & chia seeds + 2 boiled eggs",p:"20g"},
-          {f:"Energy bar or 4–5 dates + 1 glass coconut water",p:"4g"},
-          {f:"Brown rice (1 cup) + tuna/chicken (150g) + steamed veggies + olive oil",p:"36g"},
-          {f:"Sports drink or banana + peanut butter on rice cakes",p:"8g"},
-          {f:"Wholegrain pasta (100g dry) + lean mince sauce + side salad",p:"34g"},
-          {f:"Recovery smoothie: milk + banana + oats + whey (½ scoop)",p:"20g"},
+        preworkout: [
+          `Banana + ${wScaled(1,"tbsp")} peanut butter + ${eggsCount-3} boiled egg whites`,
+          `Whey protein (${protShake}) + banana shake`,
+          `Dates (${Math.round(w/15)} nos) + ${nutsCount} almonds`,
+          `Chicken breast (${Math.round(chickenG*0.5)}g) + rice cakes (${rotiCount-3} nos)`,
+          `Energy bar + ${eggsCount-3} boiled eggs`,
+          `Oats (${wScaled(50,"g")}) + protein shake (${protShake})`,
+          `Rice cakes (${rotiCount-2} nos) + almond butter + honey`,
+          `Banana + whey (${protShake}) + milk (${wScaled(200,"ml")})`,
+        ],
+        dinner: [
+          `Grilled chicken (${chickenG}g) + ${rotiCount-1} rotis + dal + salad`,
+          `Baked fish (${chickenG}g) + ${riceAmt} rice + stir-fried veggies`,
+          `Chicken stir-fry (${chickenG}g) + ${rotiCount-1} rotis + curd`,
+          `Egg curry (${eggsCount-1} eggs) + ${rotiCount} rotis + salad`,
+          `Prawn curry (${Math.round(chickenG*0.9)}g) + ${riceAmt} rice + salad`,
+          `Mutton soup (${Math.round(chickenG*0.7)}g) + ${rotiCount-1} rotis + salad`,
+          `Chicken + vegetable soup + ${rotiCount-2} rotis`,
+          `Grilled salmon (${chickenG}g) + steamed rice (${riceAmt}) + salad`,
+          `Keema (${chickenG}g) + ${rotiCount-1} rotis + raita`,
+          `Fish tikka (${chickenG}g) + mint curd + salad + ${rotiCount-2} rotis`,
+        ],
+        night: [
+          `Casein protein (1 scoop) + warm water or milk`,
+          `Warm milk (${wScaled(250,"ml")}) + ${nutsCount} soaked almonds`,
+          `Greek yogurt (${wScaled(150,"ml")}) + chia seeds`,
+          `${eggsCount-3} boiled egg whites + warm turmeric milk`,
+          `Cottage cheese (${wScaled(100,"g")}) + 1 tsp honey`,
+          `Warm chicken broth (${wScaled(200,"ml")}) + ${nutsCount} walnuts`,
         ],
       };
-      const FOODS = isVeg ? FOODS_VEG : FOODS_NONVEG;
+
+      const POOLS = isVeg ? VEG_POOLS : NONVEG_POOLS;
+
+      // Protein targets per meal slot based on goal + weight
+      const mealProtein = [
+        Math.round(protG * 0.25), // breakfast
+        Math.round(protG * 0.10), // mid snack
+        Math.round(protG * 0.30), // lunch
+        Math.round(protG * 0.10), // pre-workout
+        Math.round(protG * 0.20), // dinner
+        Math.round(protG * 0.05), // night
+      ];
+
+      const dietPlan = [
+        { meal:times[0], icon:icons[0], food:rnd(POOLS.breakfast),   calories:splits[0], protein:`${mealProtein[0]}g` },
+        { meal:times[1], icon:icons[1], food:rnd(POOLS.midsnack),    calories:splits[1], protein:`${mealProtein[1]}g` },
+        { meal:times[2], icon:icons[2], food:rnd(POOLS.lunch),       calories:splits[2], protein:`${mealProtein[2]}g` },
+        { meal:times[3], icon:icons[3], food:rnd(POOLS.preworkout),  calories:splits[3], protein:`${mealProtein[3]}g` },
+        { meal:times[4], icon:icons[4], food:rnd(POOLS.dinner),      calories:splits[4], protein:`${mealProtein[4]}g` },
+        { meal:times[5], icon:icons[5], food:rnd(POOLS.night),       calories:splits[5], protein:`${mealProtein[5]}g` },
+      ];
       const WORKOUTS = {
         "Fat Loss": {
           Moderate:[
@@ -1041,8 +1162,7 @@ function AIPlanSection({ user, members, showToast }) {
       };
       const ak = activity==="Low"?"Low":activity==="High"?"High":"Moderate";
       const workoutPlan = WORKOUTS[goal]?.[ak] || WORKOUTS["Maintenance"]["Moderate"];
-      const foods = FOODS[goal] || FOODS["Maintenance"];
-      const dietPlan = foods.map((f,i) => ({ meal:times[i], icon:icons[i], food:f.f, calories:splits[i], protein:f.p }));
+
       const wL = (w*0.035).toFixed(1);
       const TIPS = {
         "Fat Loss": [`At ${w}kg target ${wL}L water daily.`,`${kcal} kcal = ~500 kcal deficit. Weigh weekly, not daily.`,`Aim for ${protG}g protein daily to preserve muscle.`,age>35?`After 35 recovery slows — take rest days and sleep 7–8 hrs.`:`Sleep 7+ hrs — poor sleep raises cortisol and stalls fat loss.`],
@@ -1258,7 +1378,7 @@ export default function App() {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [memberCoins, setMemberCoins] = useState(0);
   const [editProfile, setEditProfile] = useState(false);
-  const [newMember, setNewMember] = useState({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+  const [newMember, setNewMember] = useState({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499", joinDate: new Date().toISOString().split("T")[0] });
   const [newMemberPhoto, setNewMemberPhoto] = useState(null);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [whatsappConfig, setWhatsappConfig] = useState({ accountSid: "", authToken: "", fromNumber: "whatsapp:+14155238886" });
@@ -1412,8 +1532,8 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
   const addMember = async () => {
     if (!newMember.name || !newMember.username || !newMember.password) { showToast("❌ Fill all required fields"); return; }
     const id = `m${Date.now()}`;
-    const joinDate = new Date().toISOString().split("T")[0];
-    const dueDate = new Date(Date.now() + 30*24*60*60*1000).toISOString().split("T")[0];
+    const joinDate = newMember.joinDate || new Date().toISOString().split("T")[0];
+    const dueDate = new Date(new Date(joinDate).getTime() + 30*24*60*60*1000).toISOString().split("T")[0];
     const m = {
       id, ...newMember, fees: Number(newMember.fees),
       photo: newMemberPhoto || null,
@@ -1427,7 +1547,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
 
     // ── Send WhatsApp welcome message ──────────────────────────
     const waResult = await sendWhatsAppWelcome(m);
-    setNewMember({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499" });
+    setNewMember({ name: "", username: "", password: "", phone: "", plan: "Basic", fees: "1499", joinDate: new Date().toISOString().split("T")[0] });
     setNewMemberPhoto(null);
     setShowPhotoOptions(false);
     setModal(null);
@@ -2508,7 +2628,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
         <div className="profile-hero" style={{textAlign:"left"}}>
           <div style={{display:"flex",gap:16,alignItems:"center"}}>
             <div className="profile-avatar-lg">{cu.gender==="Female"?"👩":"👨"}</div>
-            <div><div className="profile-name">{cu.name}</div><div className="profile-sub">{cu.plan} Plan</div><div className="row mt-8"><span className="tag tag-green">{cu.goal}</span><span className="text-xs text-muted">{cu.activity} Activity</span></div></div>
+            <div><div className="profile-name">{cu.name}</div><div className="profile-sub">{cu.plan} Plan · Joined {cu.joinDate?new Date(cu.joinDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"-"}</div><div className="row mt-8"><span className="tag tag-green">{cu.goal}</span><span className="text-xs text-muted">{cu.activity} Activity</span></div></div>
           </div>
         </div>
         <div className="card">
@@ -2526,9 +2646,32 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
             </div>
           ):(
             <div>
-              {[{k:"Age",v:`${cu.age} yrs`},{k:"Height",v:`${cu.height} cm`},{k:"Weight",v:`${cu.weight} kg`},{k:"BMI",v:(cu.weight/((cu.height/100)**2)).toFixed(1)},{k:"Gender",v:cu.gender},{k:"Goal",v:cu.goal},{k:"Activity",v:cu.activity},{k:"Medical",v:cu.medical||"None"}].map(item=>(
+              {[
+                {k:"Age",      v:`${cu.age} yrs`},
+                {k:"Height",   v:`${cu.height} cm`},
+                {k:"Weight",   v:`${cu.weight} kg`},
+                {k:"BMI",      v:(cu.weight/((cu.height/100)**2)).toFixed(1)},
+                {k:"Gender",   v:cu.gender},
+                {k:"Goal",     v:cu.goal},
+                {k:"Activity", v:cu.activity},
+                {k:"Medical",  v:cu.medical||"None"},
+              ].map(item=>(
                 <div key={item.k} className="info-row"><span className="info-key">{item.k}</span><span className="info-val">{item.v}</span></div>
               ))}
+              {/* Date of Joining – always shown */}
+              {cu.joinDate&&(
+                <div className="info-row" style={{
+                  marginTop:4,
+                  background:"rgba(0,255,136,0.04)",
+                  border:"1px solid rgba(0,255,136,0.15)",
+                  borderRadius:10,padding:"8px 12px",margin:"8px -4px 0",
+                }}>
+                  <span className="info-key" style={{color:"var(--neon)"}}>📅 Joined</span>
+                  <span className="info-val" style={{color:"var(--neon)",fontWeight:700}}>
+                    {new Date(cu.joinDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -3017,6 +3160,21 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
             <div className="input-group" style={{margin:0}}>
               <label className="input-label">💰 Monthly Fee (₹)</label>
               <input className="input-field" value={newMember.fees} onChange={e=>setNewMember(p=>({...p,fees:e.target.value}))}/>
+            </div>
+          </div>
+
+          {/* Date of Joining */}
+          <div className="input-group">
+            <label className="input-label">📅 Date of Joining</label>
+            <input
+              className="input-field"
+              type="date"
+              max={new Date().toISOString().split("T")[0]}
+              value={newMember.joinDate}
+              onChange={e=>setNewMember(p=>({...p,joinDate:e.target.value}))}
+            />
+            <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>
+              📆 Next due date auto-calculates 30 days from joining
             </div>
           </div>
 
