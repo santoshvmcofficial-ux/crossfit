@@ -855,15 +855,7 @@ function AIPlanSection({ user, members, showToast }) {
 
       // ── Dynamic diet generator — unique plan based on weight, kcal, goal, dietType ──
       const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
-      const pick = (arr, n) => {
-        const copy = [...arr];
-        const out = [];
-        while (out.length < n && copy.length) {
-          const i = Math.floor(Math.random() * copy.length);
-          out.push(copy.splice(i, 1)[0]);
-        }
-        return out;
-      };
+
 
       // Weight-scaled quantities
       const wScaled = (base, unit) => {
@@ -874,9 +866,7 @@ function AIPlanSection({ user, members, showToast }) {
       const eggsCount = w < 60 ? 2 : w < 80 ? 3 : w < 100 ? 4 : 5;
       const rotiCount = w < 60 ? 2 : w < 80 ? 3 : w < 100 ? 4 : 4;
       const riceAmt   = w < 60 ? "½ cup" : w < 80 ? "¾ cup" : w < 100 ? "1 cup" : "1.5 cups";
-      const chickenAmt = `${Math.round(w * (goal==="Muscle Gain" ? 2.2 : 1.6))}g`.replace(/\d+g/, m => {
-        const v = parseInt(m); return `${Math.min(Math.max(v,100),400)}g`;
-      });
+
       const chickenG  = Math.min(Math.max(Math.round(w * (goal==="Muscle Gain" ? 2.5 : 1.8)), 100), 350);
       const paneerG   = Math.min(Math.max(Math.round(w * (goal==="Muscle Gain" ? 3.0 : 2.0)), 100), 300);
       const nutsCount = w < 70 ? 8 : w < 90 ? 12 : 15;
@@ -2115,7 +2105,6 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
     };
 
     const { emoji, anim, label } = getExercise();
-    const c    = done ? "#000" : color;
     const bg   = done ? color  : `${color}15`;
     const uid  = Math.random().toString(36).slice(2,6);
 
