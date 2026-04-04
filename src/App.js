@@ -822,6 +822,7 @@ function AIPlanSection({ user, members, showToast }) {
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("diet");
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
 
   const bmi = (Number(form.weight) / Math.pow(Number(form.height) / 100, 2)).toFixed(1);
   const bmiLabel = bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese";
@@ -1024,14 +1025,16 @@ function AIPlanSection({ user, members, showToast }) {
         Math.round(protG * 0.05), // night
       ];
 
-      const dietPlan = [
+      // Build 7 unique daily plans (each day picks different random meals)
+      const buildDay = () => ([
         { meal:times[0], icon:icons[0], food:rnd(POOLS.breakfast),   calories:splits[0], protein:`${mealProtein[0]}g` },
         { meal:times[1], icon:icons[1], food:rnd(POOLS.midsnack),    calories:splits[1], protein:`${mealProtein[1]}g` },
         { meal:times[2], icon:icons[2], food:rnd(POOLS.lunch),       calories:splits[2], protein:`${mealProtein[2]}g` },
         { meal:times[3], icon:icons[3], food:rnd(POOLS.preworkout),  calories:splits[3], protein:`${mealProtein[3]}g` },
         { meal:times[4], icon:icons[4], food:rnd(POOLS.dinner),      calories:splits[4], protein:`${mealProtein[4]}g` },
         { meal:times[5], icon:icons[5], food:rnd(POOLS.night),       calories:splits[5], protein:`${mealProtein[5]}g` },
-      ];
+      ]);
+      const dietPlan = [0,1,2,3,4,5,6].map(() => buildDay());
       const WORKOUTS = {
         "Fat Loss": {
           Moderate:[
@@ -1298,20 +1301,130 @@ function AIPlanSection({ user, members, showToast }) {
             ))}
           </div>
           {tab==="diet" && (
-            <div style={{margin:"0 16px 16px",background:"linear-gradient(135deg,#0d1520,#0a1a0d)",border:"1px solid rgba(0,255,136,0.15)",borderRadius:16,padding:16}}>
-              {plan.dietPlan.map((m,i)=>(
-                <div key={i} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px",marginBottom:10,borderLeft:"3px solid var(--neon)",display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <div style={{fontSize:22,width:28,textAlign:"center",flexShrink:0,paddingTop:2}}>{m.icon}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:3}}>{m.meal}</div>
-                    <div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:6,lineHeight:1.45}}>{m.food}</div>
-                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                      <span style={{fontSize:11,color:"var(--neon)",background:"rgba(0,255,136,0.08)",borderRadius:4,padding:"2px 7px"}}>🔥 {m.calories} kcal</span>
-                      <span style={{fontSize:11,color:"var(--neon2)",background:"rgba(0,212,255,0.08)",borderRadius:4,padding:"2px 7px"}}>💪 {m.protein}</span>
+            <div>
+              {/* ── Day selector bar ── */}
+              {(() => {
+                const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+                const fullDays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+                const todayIdx = new Date().getDay();
+                const dayColors = ["#8b5cf6","#00ff88","#00d4ff","#ff6b35","#ffd700","#ff4444","#8b5cf6"];
+                return (
+                  <div>
+                    {/* Horizontal scrollable day pills */}
+                    <div style={{display:"flex",gap:8,padding:"0 16px 12px",overflowX:"auto",scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
+                      {days.map((d,i) => {
+                        const isSel = selectedDay === i;
+                        const isTod = i === todayIdx;
+                        const dc = dayColors[i];
+                        return (
+                          <button key={i} onClick={()=>setSelectedDay(i)} style={{
+                            flexShrink:0, padding:"8px 14px",
+                            borderRadius:20, cursor:"pointer",
+                            border:`2px solid ${isSel ? dc : "var(--border)"}`,
+                            background: isSel ? `${dc}22` : "var(--card)",
+                            color: isSel ? dc : "var(--text2)",
+                            fontFamily:"Rajdhani,sans-serif",
+                            fontSize:13, fontWeight:700,
+                            transition:"all 0.2s",
+                            boxShadow: isSel ? `0 0 14px ${dc}44` : "none",
+                            position:"relative",
+                          }}>
+                            {d}
+                            {isTod && (
+                              <div style={{
+                                position:"absolute", bottom:-2, left:"50%",
+                                transform:"translateX(-50%)",
+                                width:4, height:4, borderRadius:"50%",
+                                background: isSel ? dc : "var(--neon)",
+                                boxShadow:`0 0 5px ${isSel?dc:"var(--neon)"}`,
+                              }}/>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Day label + total kcal */}
+                    <div style={{
+                      margin:"0 16px 10px",
+                      padding:"10px 14px",
+                      background:`${dayColors[selectedDay]}10`,
+                      border:`1px solid ${dayColors[selectedDay]}33`,
+                      borderRadius:14,
+                      display:"flex", alignItems:"center", justifyContent:"space-between",
+                    }}>
+                      <div>
+                        <div style={{fontFamily:"Rajdhani",fontSize:16,fontWeight:700,color:dayColors[selectedDay]}}>{fullDays[selectedDay]}</div>
+                        <div style={{fontSize:11,color:"var(--text3)"}}>{selectedDay===todayIdx?"📍 Today":"📅 Scheduled"}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--neon)"}}>{kcal} kcal</div>
+                        <div style={{fontSize:10,color:"var(--text3)"}}>Daily Target</div>
+                      </div>
+                    </div>
+
+                    {/* Meals for selected day — vertical timeline */}
+                    <div style={{margin:"0 16px 16px",position:"relative"}}>
+                      {/* Vertical line */}
+                      <div style={{
+                        position:"absolute", left:22, top:16, bottom:16,
+                        width:2,
+                        background:`linear-gradient(180deg,${dayColors[selectedDay]},${dayColors[selectedDay]}22)`,
+                        borderRadius:2,
+                      }}/>
+
+                      {plan.dietPlan[selectedDay].map((m,i)=>(
+                        <div key={i} style={{
+                          display:"flex", gap:12, alignItems:"flex-start",
+                          marginBottom: i < 5 ? 0 : 0,
+                          paddingBottom:12,
+                          position:"relative",
+                        }}>
+                          {/* Circle on timeline */}
+                          <div style={{
+                            width:44, flexShrink:0,
+                            display:"flex", flexDirection:"column", alignItems:"center",
+                          }}>
+                            <div style={{
+                              width:18, height:18, borderRadius:"50%",
+                              background:dayColors[selectedDay],
+                              border:`3px solid var(--bg)`,
+                              boxShadow:`0 0 8px ${dayColors[selectedDay]}88`,
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              fontSize:10, zIndex:1,
+                            }}/>
+                          </div>
+
+                          {/* Meal card */}
+                          <div style={{
+                            flex:1, minWidth:0,
+                            background:"var(--card)",
+                            border:`1px solid ${dayColors[selectedDay]}22`,
+                            borderRadius:14,
+                            padding:"12px 14px",
+                            marginBottom:8,
+                          }}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                              <span style={{fontSize:18}}>{m.icon}</span>
+                              <div>
+                                <div style={{fontSize:11,fontWeight:700,color:dayColors[selectedDay],letterSpacing:0.5}}>{m.meal}</div>
+                              </div>
+                              <div style={{marginLeft:"auto",textAlign:"right"}}>
+                                <div style={{fontSize:11,fontWeight:700,color:"var(--neon)"}}>🔥 {m.calories}</div>
+                                <div style={{fontSize:10,color:"var(--text3)"}}>kcal</div>
+                              </div>
+                            </div>
+                            <div style={{fontSize:13,fontWeight:600,color:"var(--text)",lineHeight:1.5,marginBottom:6}}>{m.food}</div>
+                            <div style={{display:"flex",gap:6}}>
+                              <span style={{fontSize:10,fontWeight:700,color:"var(--neon2)",background:"rgba(0,212,255,0.08)",borderRadius:5,padding:"2px 8px"}}>💪 {m.protein} protein</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })()}
             </div>
           )}
           {tab==="workout" && (
