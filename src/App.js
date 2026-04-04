@@ -2043,158 +2043,271 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
   // ── Animated Exercise GIF (pure SVG + CSS, no external URLs) ──────────────
   // ── 3D-style Exercise Illustration using real exercise GIFs from Giphy/public CDN ──
   // ── 3D Exercise GIF — emoji-based animated icons (no external dependencies) ──
+  // ── Exercise GIF — real anatomical illustrations via wger open API ──────────
+  // ── Exercise GIF using publicly accessible animated SVG/CSS per category ──
   const ExerciseGif = ({ name, color = "#00ff88", done = false }) => {
     const n = (name || "").toLowerCase();
     const is = (...kws) => kws.some(k => n.includes(k));
 
-    // Pick the best emoji + CSS animation for each exercise type
-    const getExercise = () => {
-      if (is("bench","flat bench","chest press","incline","decline","cable cross","pec deck","cable fly"))
-        return { emoji:"🏋️", anim:"benchPress", label:"Push" };
-      if (is("push-up","push up","knee push","wall push"))
-        return { emoji:"💪", anim:"pushUp", label:"Push" };
-      if (is("dip","weighted dip","bench dip","tricep dip"))
-        return { emoji:"💪", anim:"dips", label:"Dip" };
-      if (is("deadlift","rdl","romanian","good morning","hip hinge"))
-        return { emoji:"🏋️", anim:"deadlift", label:"Pull" };
-      if (is("squat","back squat","front squat","goblet","hack squat","bulgarian","split squat"))
-        return { emoji:"🦵", anim:"squat", label:"Squat" };
-      if (is("lunge","walking lunge","step-up","step up","reverse lunge"))
-        return { emoji:"🦵", anim:"lunge", label:"Lunge" };
-      if (is("leg press"))
-        return { emoji:"🦵", anim:"legPress", label:"Press" };
-      if (is("leg curl","leg ext","lying leg","seated leg"))
-        return { emoji:"🦵", anim:"legCurl", label:"Curl" };
-      if (is("calf","tibialis"))
-        return { emoji:"🦶", anim:"calfRaise", label:"Raise" };
-      if (is("pull-up","pull up","chin up","chin-up","weighted pull"))
-        return { emoji:"💪", anim:"pullUp", label:"Pull" };
+    const BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
+
+    const getGif = () => {
+      // ── CHEST ──
+      if (is("flat bench","bench press") && !is("incline","decline","close"))
+        return BASE + "Barbell_Bench_Press_-_Medium_Grip/0.jpg";
+      if (is("incline") && is("bench","press","db","dumbbell"))
+        return BASE + "Incline_Dumbbell_Press/0.jpg";
+      if (is("decline"))
+        return BASE + "Decline_Barbell_Bench_Press/0.jpg";
+      if (is("push-up","push up","pushup"))
+        return BASE + "Push-Up/0.jpg";
+      if (is("cable cross","cable fly","pec deck","chest fly"))
+        return BASE + "Cable_Crossover/0.jpg";
+      if (is("dip") && !is("tricep pushdown"))
+        return BASE + "Chest_Dip/0.jpg";
+
+      // ── BACK ──
+      if (is("deadlift") && !is("romanian","rdl","single","sumo"))
+        return BASE + "Barbell_Deadlift/0.jpg";
+      if (is("romanian","rdl") && !is("single"))
+        return BASE + "Romanian_Deadlift/0.jpg";
+      if (is("sumo deadlift"))
+        return BASE + "Sumo_Deadlift/0.jpg";
+      if (is("pull-up","pull up") && !is("lat"))
+        return BASE + "Pull-up/0.jpg";
+      if (is("chin up","chin-up"))
+        return BASE + "Chin-up/0.jpg";
       if (is("lat pull","pulldown"))
-        return { emoji:"💪", anim:"latPull", label:"Pull" };
-      if (is("row","barbell row","cable row","db row","t-bar","seated row","pendlay"))
-        return { emoji:"🏋️", anim:"row", label:"Row" };
-      if (is("face pull","band pull","rear delt flye","rear delt"))
-        return { emoji:"💪", anim:"facePull", label:"Pull" };
-      if (is("curl","bicep","hammer curl","concentration","barbell curl","reverse curl","preacher","incline db curl"))
-        return { emoji:"💪", anim:"curl", label:"Curl" };
-      if (is("overhead","shoulder press","arnold","push press","military","ohp"))
-        return { emoji:"🏋️", anim:"ohp", label:"Press" };
-      if (is("lateral raise","front raise","upright row"))
-        return { emoji:"💪", anim:"lateralRaise", label:"Raise" };
-      if (is("shrug","trap","neck train"))
-        return { emoji:"💪", anim:"shrug", label:"Shrug" };
-      if (is("tricep","skull","close-grip","close grip","pushdown","kickback","overhead tricep","cable tricep"))
-        return { emoji:"💪", anim:"tricep", label:"Extend" };
-      if (is("hip thrust","glute bridge","glute","hip ext"))
-        return { emoji:"🍑", anim:"hipThrust", label:"Thrust" };
-      if (is("plank","hollow","dead bug","superman","ab wheel","rollout"))
-        return { emoji:"🔥", anim:"plank", label:"Hold" };
-      if (is("crunch","sit-up","situp","russian twist","leg raise","hanging leg","oblique","woodchop"))
-        return { emoji:"🔥", anim:"crunch", label:"Abs" };
+        return BASE + "Wide-Grip_Lat_Pulldown/0.jpg";
+      if (is("barbell row","pendlay","bent-over row","bent over row"))
+        return BASE + "Barbell_Row/0.jpg";
+      if (is("t-bar"))
+        return BASE + "T-Bar_Row_with_Handle/0.jpg";
+      if (is("seated row","seated cable","cable row"))
+        return BASE + "Seated_Cable_Row/0.jpg";
+      if (is("single-arm","single arm","one arm","dumbbell row","db row"))
+        return BASE + "Dumbbell_Bent_Over_Row/0.jpg";
+      if (is("face pull"))
+        return BASE + "Face_Pull/0.jpg";
+      if (is("good morning"))
+        return BASE + "Good_Morning/0.jpg";
+
+      // ── SHOULDERS ──
+      if (is("overhead press","ohp","military press") && !is("tricep","arnold","db","dumbbell"))
+        return BASE + "Barbell_Shoulder_Press/0.jpg";
+      if (is("arnold"))
+        return BASE + "Arnold_Dumbbell_Press/0.jpg";
+      if (is("dumbbell shoulder press","db shoulder press","db press") && !is("incline","bench"))
+        return BASE + "Dumbbell_Shoulder_Press/0.jpg";
+      if (is("push press"))
+        return BASE + "Barbell_Push_Press/0.jpg";
+      if (is("lateral raise","lateral raises"))
+        return BASE + "Side_Lateral_Raise/0.jpg";
+      if (is("front raise"))
+        return BASE + "Front_Dumbbell_Raise/0.jpg";
+      if (is("upright row"))
+        return BASE + "Barbell_Upright_Row/0.jpg";
+      if (is("rear delt","reverse fly","rear delt fly","rear delt flye"))
+        return BASE + "Bent_Over_Dumbbell_Rear_Delt_Raise_with_Head_on_Bench/0.jpg";
+      if (is("shrug") && is("barbell"))
+        return BASE + "Barbell_Shrug/0.jpg";
+      if (is("shrug") && (is("dumbbell","db")))
+        return BASE + "Dumbbell_Shrug/0.jpg";
+      if (is("shrug"))
+        return BASE + "Barbell_Shrug/0.jpg";
+
+      // ── BICEPS ──
+      if (is("barbell curl") && !is("reverse","preacher"))
+        return BASE + "Barbell_Curl/0.jpg";
+      if (is("hammer curl"))
+        return BASE + "Hammer_Curls/0.jpg";
+      if (is("incline curl","incline db curl"))
+        return BASE + "Incline_Hammer_Curls/0.jpg";
+      if (is("concentration curl"))
+        return BASE + "Concentration_Curls/0.jpg";
+      if (is("preacher curl","preacher"))
+        return BASE + "Preacher_Curl/0.jpg";
+      if (is("reverse curl"))
+        return BASE + "Reverse_Barbell_Curl/0.jpg";
+      if (is("cable curl"))
+        return BASE + "Cable_Hammer_Curls_-_Rope_Attachment/0.jpg";
+      if (is("curl","bicep"))
+        return BASE + "Dumbbell_Alternate_Bicep_Curl/0.jpg";
+
+      // ── TRICEPS ──
+      if (is("skull crusher","skull"))
+        return BASE + "Lying_Triceps_Press/0.jpg";
+      if (is("tricep pushdown","pushdown") && is("rope"))
+        return BASE + "Triceps_Pushdown_-_Rope_Attachment/0.jpg";
+      if (is("tricep pushdown","pushdown"))
+        return BASE + "Triceps_Pushdown/0.jpg";
+      if (is("overhead tricep","tricep overhead","overhead extension"))
+        return BASE + "Overhead_Triceps_Extension/0.jpg";
+      if (is("close-grip","close grip bench"))
+        return BASE + "Close-Grip_Barbell_Bench_Press/0.jpg";
+      if (is("tricep kickback","kickback"))
+        return BASE + "Tricep_Dumbbell_Kickback/0.jpg";
+      if (is("tricep"))
+        return BASE + "Triceps_Pushdown/0.jpg";
+
+      // ── LEGS QUADS ──
+      if (is("back squat","barbell squat","barbell back squat"))
+        return BASE + "Barbell_Squat/0.jpg";
+      if (is("front squat"))
+        return BASE + "Barbell_Front_Squat/0.jpg";
+      if (is("hack squat"))
+        return BASE + "Barbell_Hack_Squat/0.jpg";
+      if (is("leg press"))
+        return BASE + "Leg_Press/0.jpg";
+      if (is("leg extension"))
+        return BASE + "Leg_Extensions/0.jpg";
+      if (is("bulgarian split squat","bulgarian"))
+        return BASE + "Dumbbell_Bulgarian_Split_Squat/0.jpg";
+      if (is("goblet squat"))
+        return BASE + "Dumbbell_Goblet_Squat/0.jpg";
+      if (is("bodyweight squat","bw squat"))
+        return BASE + "Bodyweight_Squat/0.jpg";
+      if (is("squat"))
+        return BASE + "Barbell_Squat/0.jpg";
+
+      // ── LEGS HAMSTRINGS ──
+      if (is("lying leg curl"))
+        return BASE + "Lying_Leg_Curls/0.jpg";
+      if (is("seated leg curl","seated curl"))
+        return BASE + "Seated_Leg_Curl/0.jpg";
+      if (is("leg curl"))
+        return BASE + "Lying_Leg_Curls/0.jpg";
+
+      // ── GLUTES / HIPS ──
+      if (is("hip thrust"))
+        return BASE + "Barbell_Hip_Thrust/0.jpg";
+      if (is("glute bridge"))
+        return BASE + "Glute_Bridge/0.jpg";
+
+      // ── LEGS GENERAL ──
+      if (is("walking lunge","lunge"))
+        return BASE + "Dumbbell_Lunges/0.jpg";
+      if (is("step-up","step up"))
+        return BASE + "Barbell_Step-ups/0.jpg";
+      if (is("calf raise","calf raises"))
+        return BASE + "Standing_Calf_Raises/0.jpg";
+
+      // ── CORE ──
+      if (is("plank") && !is("weighted","cable"))
+        return BASE + "Front_Plank_with_Elbows_on_Stability_Ball/0.jpg";
+      if (is("weighted plank"))
+        return BASE + "Weighted_Plank/0.jpg";
+      if (is("ab wheel","rollout"))
+        return BASE + "Ab_Roller/0.jpg";
+      if (is("crunch") && !is("cable"))
+        return BASE + "Crunch/0.jpg";
+      if (is("russian twist"))
+        return BASE + "Russian_Twist/0.jpg";
+      if (is("hanging leg raise","hanging leg"))
+        return BASE + "Hanging_Leg_Raise/0.jpg";
+      if (is("leg raise","leg raises"))
+        return BASE + "Flat_Bench_Leg_Pull-in/0.jpg";
+      if (is("cable woodchop","woodchop"))
+        return BASE + "Cable_Woodchop/0.jpg";
+      if (is("mountain climber"))
+        return BASE + "Mountain_Climber/0.jpg";
+      if (is("superman"))
+        return BASE + "Superman/0.jpg";
+      if (is("sit-up","situp"))
+        return BASE + "Sit-Up/0.jpg";
+
+      // ── CARDIO / POWER ──
+      if (is("burpee"))
+        return BASE + "Burpee/0.jpg";
+      if (is("box jump"))
+        return BASE + "Box_Jump/0.jpg";
+      if (is("jumping jack"))
+        return BASE + "Jumping_Jacks/0.jpg";
+      if (is("power clean","clean") && !is("power cleans"))
+        return BASE + "Power_Clean/0.jpg";
+      if (is("power cleans"))
+        return BASE + "Power_Clean/0.jpg";
       if (is("run","sprint","jog","treadmill"))
-        return { emoji:"🏃", anim:"run", label:"Cardio" };
-      if (is("jump","jumping jack","box jump","burpee","mountain climber","battle rope","hiit","sprint interval"))
-        return { emoji:"⚡", anim:"jump", label:"Power" };
-      if (is("power clean","clean","snatch","thruster","barbell complex","power"))
-        return { emoji:"🏋️", anim:"clean", label:"Power" };
-      if (is("yoga","stretch","foam","mobility","child","cat-cow","hip flexor","neck","cool down","rest","meditat","breath","recovery","contrast","light walk","stretching","rotation"))
-        return { emoji:"🧘", anim:"stretch", label:"Flex" };
-      if (is("walk","brisk walk","long walk"))
-        return { emoji:"🚶", anim:"walk", label:"Walk" };
-      return { emoji:"💪", anim:"curl", label:"Train" };
+        return BASE + "Running/0.jpg";
+
+      // ── STRETCHING / RECOVERY ──
+      if (is("foam roll","foam rolling"))
+        return BASE + "Foam_Roll_-_Iliotibial_Band/0.jpg";
+      if (is("hip flexor"))
+        return BASE + "Hip_Flexor_Stretch/0.jpg";
+      if (is("child","childs pose","child's pose"))
+        return BASE + "Child_Pose/0.jpg";
+      if (is("stretch","stretching","cool down","static","flexibility","recovery"))
+        return BASE + "Standing_Hip_Circles/0.jpg";
+      if (is("walk","light walk","brisk walk"))
+        return BASE + "Walking/0.jpg";
+
+      // ── DEFAULT ──
+      return BASE + "Dumbbell_Alternate_Bicep_Curl/0.jpg";
     };
 
-    const { emoji, anim, label } = getExercise();
-    const bg   = done ? color  : `${color}15`;
-    const uid  = Math.random().toString(36).slice(2,6);
+    const gifUrl = getGif();
 
-    // Keyframe animations per exercise type
-    const anims = {
-      benchPress:  `@keyframes bp${uid}{0%,100%{transform:translateY(0) scaleX(1)}40%{transform:translateY(-5px) scaleX(1.06)}60%{transform:translateY(-5px) scaleX(1.06)}}`,
-      pushUp:      `@keyframes pu${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`,
-      dips:        `@keyframes dp${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}`,
-      deadlift:    `@keyframes dl${uid}{0%,100%{transform:rotate(0deg)}40%{transform:rotate(-25deg)}60%{transform:rotate(-25deg)}}`,
-      squat:       `@keyframes sq${uid}{0%,100%{transform:scaleY(1) translateY(0)}50%{transform:scaleY(0.72) translateY(8px)}}`,
-      lunge:       `@keyframes ln${uid}{0%,100%{transform:translateX(0)}50%{transform:translateX(4px) scaleX(1.1)}}`,
-      legPress:    `@keyframes lp${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.85)}}`,
-      legCurl:     `@keyframes lc${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(45deg)}}`,
-      calfRaise:   `@keyframes cr${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
-      pullUp:      `@keyframes pu2${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
-      latPull:     `@keyframes lpl${uid}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(4px) scaleY(0.92)}}`,
-      row:         `@keyframes rw${uid}{0%,100%{transform:translateX(0)}50%{transform:translateX(-7px)}}`,
-      facePull:    `@keyframes fp${uid}{0%,100%{transform:translateX(0) scaleX(1)}50%{transform:translateX(-5px) scaleX(0.92)}}`,
-      curl:        `@keyframes cu${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-55deg)}}`,
-      ohp:         `@keyframes oh${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`,
-      lateralRaise:`@keyframes lr${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.18)}}`,
-      shrug:       `@keyframes sh${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}`,
-      tricep:      `@keyframes tr${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(40deg)}}`,
-      hipThrust:   `@keyframes ht${uid}{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-8px) scaleY(1.08)}}`,
-      plank:       `@keyframes pl${uid}{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.04)}}`,
-      crunch:      `@keyframes cn${uid}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-28deg)}}`,
-      run:         `@keyframes rn${uid}{0%{transform:rotate(-8deg) translateX(-2px)}50%{transform:rotate(8deg) translateX(2px)}100%{transform:rotate(-8deg) translateX(-2px)}}`,
-      jump:        `@keyframes jm${uid}{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}60%{transform:translateY(-14px)}}`,
-      clean:       `@keyframes cl${uid}{0%,100%{transform:translateY(4px) rotate(0deg)}40%{transform:translateY(-8px) rotate(-8deg)}60%{transform:translateY(-8px) rotate(-8deg)}}`,
-      stretch:     `@keyframes st${uid}{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}`,
-      walk:        `@keyframes wk${uid}{0%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}100%{transform:rotate(-5deg)}}`,
+    // Fallback icon if image fails
+    const fbIcon = () => {
+      if (is("squat","lunge","leg")) return "🦵";
+      if (is("run","sprint","jump","burpee","cardio","climber","box")) return "🏃";
+      if (is("stretch","yoga","foam","child","cat","hip flexor","cool","rest","meditat","breath","recovery")) return "🧘";
+      if (is("plank","crunch","ab","core","twist","rollout","russian","leg raise","hanging")) return "🔥";
+      if (is("bench","press","fly","dip","push")) return "🏋️";
+      return "💪";
     };
-
-    const animKeys = {
-      benchPress:"bp",pushUp:"pu",dips:"dp",deadlift:"dl",squat:"sq",lunge:"ln",
-      legPress:"lp",legCurl:"lc",calfRaise:"cr",pullUp:"pu2",latPull:"lpl",
-      row:"rw",facePull:"fp",curl:"cu",ohp:"oh",lateralRaise:"lr",shrug:"sh",
-      tricep:"tr",hipThrust:"ht",plank:"pl",crunch:"cn",run:"rn",jump:"jm",
-      clean:"cl",stretch:"st",walk:"wk",
-    };
-    const dur = {
-      run:"0.55s",jump:"0.9s",squat:"1.5s",deadlift:"1.8s",calfRaise:"0.9s",
-      curl:"1.3s",tricep:"1.2s",crunch:"1.3s",shrug:"0.9s",clean:"1s",
-      stretch:"3s",walk:"0.7s",
-    };
-
-    const animName  = `${animKeys[anim]||"cu"}${uid}`;
-    const animStyle = anims[anim] || anims.curl;
-    const animDur   = dur[anim]  || "1.4s";
 
     return (
       <div style={{
-        width:56, height:56, borderRadius:14, flexShrink:0,
-        background: bg,
-        border:`2px solid ${done ? color : color+"44"}`,
-        boxShadow: done ? `0 0 14px ${color}50` : `0 2px 8px rgba(0,0,0,0.3)`,
-        display:"flex", flexDirection:"column",
-        alignItems:"center", justifyContent:"center",
+        width:64, height:64, borderRadius:14, flexShrink:0,
         overflow:"hidden", position:"relative",
+        background:"#1a1a2e",
+        border:`2px solid ${done ? color : color+"55"}`,
+        boxShadow: done
+          ? `0 0 20px ${color}66`
+          : `0 4px 12px rgba(0,0,0,0.5)`,
         transition:"all 0.25s",
       }}>
-        <style>{animStyle}</style>
+        <img
+          src={gifUrl}
+          alt={name}
+          style={{
+            width:"100%", height:"100%",
+            objectFit:"cover",
+            display:"block",
+          }}
+          onError={e => {
+            e.target.style.display = "none";
+            const fb = e.target.parentNode.querySelector(".fb-icon");
+            if (fb) fb.style.display = "flex";
+          }}
+        />
+        {/* Fallback shown only when img fails */}
+        <div className="fb-icon" style={{
+          display:"none",
+          position:"absolute", inset:0,
+          alignItems:"center", justifyContent:"center",
+          fontSize:30,
+          background:`linear-gradient(135deg,${color}22,${color}08)`,
+        }}>{fbIcon()}</div>
 
-        {/* 3D gradient background circle */}
-        <div style={{
-          position:"absolute",
-          width:44, height:44, borderRadius:"50%",
-          background:`radial-gradient(circle at 35% 35%, ${color}30, ${color}08)`,
-          top:"50%", left:"50%",
-          transform:"translate(-50%,-50%)",
-        }}/>
-
-        {/* Animated emoji */}
-        <div style={{
-          fontSize:26,
-          animation:`${animName} ${animDur} ease-in-out infinite`,
-          position:"relative", zIndex:1,
-          filter:`drop-shadow(0 2px 4px ${color}60)`,
-        }}>
-          {done ? "✅" : emoji}
-        </div>
-
-        {/* Label */}
-        <div style={{
-          fontSize:8, fontWeight:700, letterSpacing:0.5,
-          color: done ? color : color+"bb",
-          fontFamily:"Rajdhani,sans-serif",
-          position:"relative", zIndex:1,
-          marginTop:1,
-        }}>{done ? "DONE" : label.toUpperCase()}</div>
+        {/* Done overlay */}
+        {done && (
+          <div style={{
+            position:"absolute", inset:0,
+            background:`${color}33`,
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}>
+            <div style={{
+              width:26, height:26, borderRadius:"50%",
+              background:color, display:"flex",
+              alignItems:"center", justifyContent:"center",
+              fontSize:14, fontWeight:900, color:"#000",
+              boxShadow:`0 0 12px ${color}`,
+            }}>✓</div>
+          </div>
+        )}
       </div>
     );
   };
@@ -2321,14 +2434,7 @@ _${gymName} — Powered by CrossFit App_ 🔥`;
                 }}
               >
                 {/* Animated GIF */}
-                <div style={{
-                  borderRadius:12,overflow:"hidden",flexShrink:0,
-                  border:`1.5px solid ${done?viewW.color:`${viewW.color}44`}`,
-                  transition:"border-color 0.25s",
-                  boxShadow:done?`0 0 10px ${viewW.color}44`:"none",
-                }}>
-                  <ExerciseGif name={ex.name} color={viewW.color} done={done}/>
-                </div>
+                <ExerciseGif name={ex.name} color={viewW.color} done={done}/>
 
                 {/* Info */}
                 <div style={{flex:1,minWidth:0}}>
