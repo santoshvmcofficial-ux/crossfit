@@ -1026,15 +1026,85 @@ function AIPlanSection({ user, members, showToast }) {
       ];
 
       // Build 7 unique daily plans (each day picks different random meals)
-      const buildDay = () => ([
-        { meal:times[0], icon:icons[0], food:rnd(POOLS.breakfast),   calories:splits[0], protein:`${mealProtein[0]}g` },
-        { meal:times[1], icon:icons[1], food:rnd(POOLS.midsnack),    calories:splits[1], protein:`${mealProtein[1]}g` },
-        { meal:times[2], icon:icons[2], food:rnd(POOLS.lunch),       calories:splits[2], protein:`${mealProtein[2]}g` },
-        { meal:times[3], icon:icons[3], food:rnd(POOLS.preworkout),  calories:splits[3], protein:`${mealProtein[3]}g` },
-        { meal:times[4], icon:icons[4], food:rnd(POOLS.dinner),      calories:splits[4], protein:`${mealProtein[4]}g` },
-        { meal:times[5], icon:icons[5], food:rnd(POOLS.night),       calories:splits[5], protein:`${mealProtein[5]}g` },
-      ]);
-      const dietPlan = [0,1,2,3,4,5,6].map(() => buildDay());
+      // ── 7 day structured diet plans ──────────────────────────────────────────
+      // Each day has a different nutritional focus based on goal + day of week.
+      // Day focus adjusts calorie split & food selection (high-carb on workout days,
+      // lower-carb on rest days, refeed on Saturday, light on Sunday).
+
+      const DAY_FOCUS = {
+        "Fat Loss": [
+          { label:"Rest & Detox",    kcalMult:0.85, protMult:1.0,  carbFocus:"low",  note:"Lower carb rest day" },   // Sun
+          { label:"High Protein",    kcalMult:1.00, protMult:1.2,  carbFocus:"mod",  note:"Strength training day" }, // Mon
+          { label:"Cardio Fuel",     kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"Cardio + core day" },     // Tue
+          { label:"Mid-Week Boost",  kcalMult:0.90, protMult:1.1,  carbFocus:"low",  note:"Intervals day" },         // Wed
+          { label:"Power Day",       kcalMult:1.00, protMult:1.2,  carbFocus:"mod",  note:"Lower body strength" },   // Thu
+          { label:"Cardio + HIIT",   kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"High intensity cardio" }, // Fri
+          { label:"Refeed Day",      kcalMult:1.10, protMult:0.9,  carbFocus:"high", note:"Weekly carb refeed" },    // Sat
+        ],
+        "Muscle Gain": [
+          { label:"Recovery",        kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"Active recovery" },       // Sun
+          { label:"Chest Day Fuel",  kcalMult:1.10, protMult:1.3,  carbFocus:"high", note:"Chest + triceps" },       // Mon
+          { label:"Back Day Fuel",   kcalMult:1.10, protMult:1.3,  carbFocus:"high", note:"Back + biceps" },         // Tue
+          { label:"Mid-Week",        kcalMult:0.95, protMult:1.1,  carbFocus:"mod",  note:"Active recovery" },       // Wed
+          { label:"Shoulder Fuel",   kcalMult:1.10, protMult:1.2,  carbFocus:"high", note:"Shoulders + arms" },      // Thu
+          { label:"Leg Day Fuel",    kcalMult:1.15, protMult:1.2,  carbFocus:"high", note:"Legs — highest volume" }, // Fri
+          { label:"Full Body",       kcalMult:1.05, protMult:1.1,  carbFocus:"mod",  note:"Full body power" },       // Sat
+        ],
+        "Maintenance": [
+          { label:"Light Day",       kcalMult:0.90, protMult:0.9,  carbFocus:"mod",  note:"Rest & recharge" },       // Sun
+          { label:"Active Day",      kcalMult:1.00, protMult:1.0,  carbFocus:"mod",  note:"Upper body" },            // Mon
+          { label:"Cardio Day",      kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"Cardio + lower" },        // Tue
+          { label:"Mid-Week",        kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"Rest or light" },         // Wed
+          { label:"Strength Day",    kcalMult:1.00, protMult:1.0,  carbFocus:"mod",  note:"Full body" },             // Thu
+          { label:"Active Day",      kcalMult:1.00, protMult:1.0,  carbFocus:"mod",  note:"Sport / fun" },           // Fri
+          { label:"Social Day",      kcalMult:1.05, protMult:0.9,  carbFocus:"high", note:"Flexible eating day" },   // Sat
+        ],
+        "Endurance": [
+          { label:"Rest Day",        kcalMult:0.85, protMult:0.9,  carbFocus:"low",  note:"Complete rest" },         // Sun
+          { label:"Interval Fuel",   kcalMult:1.10, protMult:1.0,  carbFocus:"high", note:"Intervals day" },         // Mon
+          { label:"Strength Fuel",   kcalMult:1.00, protMult:1.2,  carbFocus:"mod",  note:"Strength session" },      // Tue
+          { label:"Recovery Run",    kcalMult:0.90, protMult:1.0,  carbFocus:"mod",  note:"Easy jog" },              // Wed
+          { label:"Cross Train",     kcalMult:0.95, protMult:1.0,  carbFocus:"mod",  note:"Cycle / swim" },          // Thu
+          { label:"Tempo Fuel",      kcalMult:1.10, protMult:1.0,  carbFocus:"high", note:"Tempo run" },             // Fri
+          { label:"Long Run Carb",   kcalMult:1.20, protMult:0.9,  carbFocus:"high", note:"Long run — carb up!" },   // Sat
+        ],
+      };
+
+      const focusList = DAY_FOCUS[goal] || DAY_FOCUS["Maintenance"];
+
+      const buildDay = (dayIdx) => {
+        const focus   = focusList[dayIdx];
+        const dayKcal = Math.round(kcal * focus.kcalMult);
+        const dayProt = Math.round(protG * focus.protMult);
+        const dayFat  = Math.round(fatG);
+        const dayCarb = Math.round((dayKcal - dayProt*4 - dayFat*9) / 4);
+
+        // Adjust calorie split per meal slightly based on focus
+        const dayKcalMultipliers = focus.carbFocus === "high"
+          ? [0.22,0.08,0.32,0.12,0.22,0.04]   // more at lunch + pre-workout
+          : focus.carbFocus === "low"
+          ? [0.25,0.10,0.28,0.08,0.24,0.05]   // lighter overall
+          : [0.25,0.10,0.30,0.10,0.20,0.05];  // balanced
+
+        const dayKcalSplits = dayKcalMultipliers.map(p => Math.round(dayKcal * p));
+        const dayProtSplits = [0.25,0.10,0.30,0.10,0.20,0.05].map(p => Math.round(dayProt * p));
+
+        return {
+          focus: focus.label,
+          note:  focus.note,
+          totalKcal: dayKcal,
+          macros: { protein:`${dayProt}g`, carbs:`${dayCarb}g`, fat:`${dayFat}g` },
+          meals: [
+            { meal:times[0], icon:icons[0], food:rnd(POOLS.breakfast),  calories:dayKcalSplits[0], protein:`${dayProtSplits[0]}g` },
+            { meal:times[1], icon:icons[1], food:rnd(POOLS.midsnack),   calories:dayKcalSplits[1], protein:`${dayProtSplits[1]}g` },
+            { meal:times[2], icon:icons[2], food:rnd(POOLS.lunch),      calories:dayKcalSplits[2], protein:`${dayProtSplits[2]}g` },
+            { meal:times[3], icon:icons[3], food:rnd(POOLS.preworkout), calories:dayKcalSplits[3], protein:`${dayProtSplits[3]}g` },
+            { meal:times[4], icon:icons[4], food:rnd(POOLS.dinner),     calories:dayKcalSplits[4], protein:`${dayProtSplits[4]}g` },
+            { meal:times[5], icon:icons[5], food:rnd(POOLS.night),      calories:dayKcalSplits[5], protein:`${dayProtSplits[5]}g` },
+          ],
+        };
+      };
+      const dietPlan = [0,1,2,3,4,5,6].map(i => buildDay(i));
       const WORKOUTS = {
         "Fat Loss": {
           Moderate:[
@@ -1344,28 +1414,50 @@ function AIPlanSection({ user, members, showToast }) {
                       })}
                     </div>
 
-                    {/* Day label + total kcal */}
-                    <div style={{
-                      margin:"0 16px 10px",
-                      padding:"10px 14px",
-                      background:`${dayColors[selectedDay]}10`,
-                      border:`1px solid ${dayColors[selectedDay]}33`,
-                      borderRadius:14,
-                      display:"flex", alignItems:"center", justifyContent:"space-between",
-                    }}>
-                      <div>
-                        <div style={{fontFamily:"Rajdhani",fontSize:16,fontWeight:700,color:dayColors[selectedDay]}}>{fullDays[selectedDay]}</div>
-                        <div style={{fontSize:11,color:"var(--text3)"}}>{selectedDay===todayIdx?"📍 Today":"📅 Scheduled"}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:"var(--neon)"}}>{kcal} kcal</div>
-                        <div style={{fontSize:10,color:"var(--text3)"}}>Daily Target</div>
-                      </div>
-                    </div>
+                    {/* Day banner with focus + macros */}
+                    {(() => {
+                      const day = plan.dietPlan[selectedDay];
+                      return (
+                        <div style={{
+                          margin:"0 16px 12px",
+                          background:`linear-gradient(135deg,${dayColors[selectedDay]}18,${dayColors[selectedDay]}06)`,
+                          border:`1px solid ${dayColors[selectedDay]}44`,
+                          borderRadius:16, padding:"14px 16px",
+                        }}>
+                          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+                            <div>
+                              <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:dayColors[selectedDay]}}>{fullDays[selectedDay]} — {day.focus}</div>
+                              <div style={{fontSize:11,color:"var(--text2)",marginTop:2}}>{selectedDay===todayIdx?"📍 Today · ":""}{day.note}</div>
+                            </div>
+                            <div style={{
+                              background:dayColors[selectedDay]+"22",
+                              border:`1px solid ${dayColors[selectedDay]}44`,
+                              borderRadius:10,padding:"5px 10px",textAlign:"center",flexShrink:0,marginLeft:10,
+                            }}>
+                              <div style={{fontFamily:"Rajdhani",fontSize:18,fontWeight:700,color:dayColors[selectedDay]}}>{day.totalKcal}</div>
+                              <div style={{fontSize:9,color:"var(--text3)",fontWeight:600}}>KCAL</div>
+                            </div>
+                          </div>
+                          {/* Macro pills */}
+                          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                            {[
+                              {label:"Protein",val:day.macros.protein,color:"#00d4ff"},
+                              {label:"Carbs",  val:day.macros.carbs,  color:"#ffd700"},
+                              {label:"Fat",    val:day.macros.fat,    color:"#ff6b35"},
+                            ].map(macro=>(
+                              <div key={macro.label} style={{
+                                background:`${macro.color}15`,border:`1px solid ${macro.color}44`,
+                                borderRadius:20,padding:"3px 10px",
+                                fontSize:11,fontWeight:700,color:macro.color,
+                              }}>{macro.label}: {macro.val}</div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
-                    {/* Meals for selected day — vertical timeline */}
+                    {/* Meals — vertical timeline */}
                     <div style={{margin:"0 16px 16px",position:"relative"}}>
-                      {/* Vertical line */}
                       <div style={{
                         position:"absolute", left:22, top:16, bottom:16,
                         width:2,
@@ -1373,7 +1465,7 @@ function AIPlanSection({ user, members, showToast }) {
                         borderRadius:2,
                       }}/>
 
-                      {plan.dietPlan[selectedDay].map((m,i)=>(
+                      {plan.dietPlan[selectedDay].meals.map((m,i)=>(
                         <div key={i} style={{
                           display:"flex", gap:12, alignItems:"flex-start",
                           marginBottom: i < 5 ? 0 : 0,
