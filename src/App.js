@@ -816,7 +816,6 @@ function AIPlanSection({ user, members, showToast }) {
       const protG = goal==="Muscle Gain" ? Math.round(w*2.2) : goal==="Fat Loss" ? Math.round(w*2) : Math.round(w*1.6);
       const fatG = Math.round(kcal*0.25/9);
       const carbG = Math.round((kcal - protG*4 - fatG*9)/4);
-      const splits = [0.25,0.10,0.30,0.10,0.20,0.05].map(p=>Math.round(kcal*p));
       const times = ["Breakfast (7:00 AM)","Mid-Morning Snack (10:00 AM)","Lunch (1:00 PM)","Pre-Workout (4:30 PM)","Dinner (7:30 PM)","Night / Post-Workout (9:30 PM)"];
       const icons = ["🌅","🍎","☀️","⚡","🌙","🌟"];
       const isVeg = form.dietType === "veg";
@@ -983,14 +982,6 @@ function AIPlanSection({ user, members, showToast }) {
       const POOLS = isVeg ? VEG_POOLS : NONVEG_POOLS;
 
       // Protein targets per meal slot based on goal + weight
-      const mealProtein = [
-        Math.round(protG * 0.25), // breakfast
-        Math.round(protG * 0.10), // mid snack
-        Math.round(protG * 0.30), // lunch
-        Math.round(protG * 0.10), // pre-workout
-        Math.round(protG * 0.20), // dinner
-        Math.round(protG * 0.05), // night
-      ];
 
       // Build 7 unique daily plans (each day picks different random meals)
       // ── 7 day structured diet plans ──────────────────────────────────────────
