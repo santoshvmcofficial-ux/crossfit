@@ -1,7 +1,12 @@
 {
   "short_name": "Crossfit",
-  "name": "Crossfit Gym",
+  "name": "Crossfit Gym App",
   "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
     {
       "src": "logo192.png",
       "type": "image/png",
